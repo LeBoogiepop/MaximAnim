@@ -1,0 +1,1 @@
+export function ArtworkCredits() { return <p className="text-xs text-soft">Catalogue et illustrations : AniList et leurs titulaires de droits. Les vidéos de cette édition sont des démonstrations autorisées, pas des épisodes d’anime.</p>; }

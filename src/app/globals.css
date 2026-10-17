@@ -1,0 +1,993 @@
+@import "tailwindcss" source("../");
+
+/*
+ * Maximanim design tokens.
+ * RC10 cinematic ground. Artwork and condensed display type carry identity;
+ * rose remains the global signal. Existing token names preserve every consumer.
+ */
+@theme {
+  --color-ink: #000000;
+  --color-ink-deep: #000000;
+  --color-raised: #0c0c0f;
+  --color-surface: #19191d;
+  --color-line: #303035;
+  /* The same hairline under its other name: `border-hairline` was used in a dozen places but never defined, so every such
+     separator was drawn in the text colour (currentcolor) — a loud bright line instead of a quiet one. */
+  --color-hairline: #303035;
+  --color-paper: #f6f3ee;
+  --color-soft: #c4c1be;
+  --color-muted: #99969d;
+  --color-accent: #f2768d;
+  --color-accent-deep: #b94f65;
+  --color-cream: #ddbf72;
+  --color-cream-deep: #9d8547;
+  --color-coral: #e3695c;
+  --color-coral-deep: #9f4238;
+  --color-green: #82b98a;
+
+  --font-sans: var(--font-archivo), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Hiragino Sans", "Segoe UI", Roboto, "Helvetica Neue",
+    "Noto Sans JP", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --radius-card: 0.5rem;
+  --radius-poster: 0.375rem;
+  --radius-control: 0.375rem;
+  --text-display: 2.25rem;
+  --text-section: 1.5rem;
+  --spacing-section: 2rem;
+
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --animate-wiggle: wiggle 460ms ease-in-out;
+  --animate-pop: pop 260ms var(--ease-snap);
+  --animate-fade-in: fade-in 180ms ease-out;
+  --animate-sheet-in: sheet-in 240ms var(--ease-snap);
+  --animate-breathe: breathe 1.8s ease-in-out infinite;
+
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    20% { transform: rotate(-12deg) scale(1.08); }
+    45% { transform: rotate(9deg) scale(1.05); }
+    70% { transform: rotate(-5deg); }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  /* The player's first load: the mark fades gently, nothing moves around. */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  @keyframes sheet-in {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
+:root {
+  --nav-height: 4.25rem;
+  --nav-rail-width: 12.5rem;
+  --page-gutter: 1rem;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  color-scheme: dark;
+}
+
+@layer components {
+  .contextual-content { --color-accent: var(--tone); }
+  .context-accent { color: var(--tone, var(--color-accent)); }
+  .fact-link { color: var(--tone, var(--color-accent)); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--tone, var(--color-accent)) 45%, transparent); text-underline-offset: 4px; }
+  .fact-link:hover { text-decoration-color: currentColor; }
+  .staff-link:hover > span:nth-child(2), .staff-link:focus-visible > span:nth-child(2) { color: var(--tone, var(--color-accent)); }
+  .upcoming-row { display: flex; align-items: center; gap: 0.875rem; min-height: 76px; padding-block: 0.625rem; border-bottom: 1px solid var(--color-line); }
+  .upcoming-row:active { background: var(--color-raised); }
+  .work-watched { background: linear-gradient(90deg, color-mix(in srgb, var(--tone, var(--color-accent)) 9%, var(--color-surface)), transparent); box-shadow: inset 2px 0 var(--studio-mark, var(--tone, var(--color-accent))); }
+  .episode-watched { background: color-mix(in srgb, var(--tone, var(--color-accent)) 8%, var(--color-raised)); box-shadow: inset 2px 0 var(--tone, var(--color-accent)); }
+  .display-identity { font-size: 1.75rem; line-height: 1.08; font-weight: 750; font-stretch: 90%; letter-spacing: -0.035em; text-wrap: balance; }
+}
+
+html {
+  background: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  /* No double-tap zoom on controls; pinch-zoom stays available for accessibility. */
+  touch-action: manipulation;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 80%, transparent);
+  outline-offset: 2px;
+}
+/* Outside layers: the global focus rule and utility border must not stack. */
+.search-field:focus, .search-field:focus-visible { outline: none; border-color: var(--color-accent); box-shadow: none; }
+
+/*
+ * The contextual palette is registered, so a change of tone (another season, or the pixel-sampled hue replacing the AniList colour a
+ * moment after the first paint) eases over 300 ms instead of snapping: tabs, the play button and borders never blink a second colour.
+ */
+@property --tone { syntax: "<color>"; inherits: true; initial-value: #f2768d; }
+@property --tone-soft { syntax: "<color>"; inherits: true; initial-value: rgb(242 118 141 / 12%); }
+@property --tone-glow { syntax: "<color>"; inherits: true; initial-value: rgb(242 118 141 / 22%); }
+@property --tone-on { syntax: "<color>"; inherits: true; initial-value: #0d0e12; }
+.app-shell, .contextual-content { transition: --tone 300ms ease-out, --tone-soft 300ms ease-out, --tone-glow 300ms ease-out, --tone-on 300ms ease-out; }
+/* Browser focus after pointer/dialog restoration must not look like a watched frame. */
+.episode-carousel:focus:not(:focus-visible), .episode-carousel :is(a, button):focus:not(:focus-visible) { outline: none; }
+.episode-carousel:focus-visible, .episode-carousel :is(a, button):focus-visible { outline: 2px solid var(--tone, var(--color-accent)); outline-offset: 2px; }
+/* WebKit restores focus by script (a closing sheet, Back) and then matches :focus-visible after a tap: that ring looked like a pale frame
+   around an episode thumbnail. After a finger or a mouse there is no ring on links and buttons; the keyboard keeps every one of them. */
+html[data-input="pointer"] :is(a, button, [tabindex], summary):focus-visible { outline: none; }
+.episode-carousel [data-watched="true"] [data-testid="episode-thumbnail"]::after { content: ""; position: absolute; inset: auto 0 0; height: 2px; background: var(--tone, var(--color-accent)); opacity: 0.6; }
+
+button,
+a,
+[role="button"] {
+  -webkit-touch-callout: none;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+@layer components {
+  /* Touch feedback, content and navigation (rows, links, tiles, tabs): opacity only. A row that sinks (scale) under the finger
+     looks wrong on an iPhone; the surface stays where it is and just answers. */
+  .tactile {
+    transition:
+      background-color 140ms ease-out,
+      border-color 140ms ease-out,
+      opacity 140ms ease-out;
+  }
+  .tactile:active:not(:disabled) {
+    opacity: 0.7;
+  }
+  /* Real buttons (a filled action) keep their quick, slight press. */
+  .tactile-press {
+    transition:
+      transform 120ms ease-out,
+      background-color 140ms ease-out,
+      border-color 140ms ease-out,
+      opacity 140ms ease-out;
+  }
+  .tactile-press:active:not(:disabled) {
+    transform: scale(0.98);
+    opacity: 0.92;
+  }
+
+  .card {
+    background: var(--color-raised);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+
+  .mono-meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.01em;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Horizontal rails: native momentum scrolling + snapping, no carousel lib. */
+  .rail {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--page-gutter);
+    padding-inline: var(--page-gutter);
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  /* A row of text tabs: sideways only. overflow-x:auto alone computes overflow-y:auto, and the underline's -1px margin left
+     1px of vertical overflow, so on iOS the row could be dragged up and down into blank space. */
+  .tab-scroller {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  .safe-top {
+    padding-top: var(--safe-top);
+  }
+  .page-header { padding-top: calc(var(--safe-top) + 1rem); }
+  .pb-nav {
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 1.5rem);
+  }
+  .px-safe {
+    padding-left: max(var(--page-gutter), var(--safe-left));
+    padding-right: max(var(--page-gutter), var(--safe-right));
+  }
+
+  .display-title, .display-section {
+    font-family: var(--font-sans);
+    font-stretch: 82%;
+    font-weight: 750;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .display-title { font-size: var(--text-display); line-height: 1.06; }
+  .display-section { font-size: var(--text-section); line-height: 1.15; }
+
+  .app-content { min-height: 100svh; }
+  .app-navigation {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 40;
+    background: var(--color-ink);
+    border-top: 1px solid var(--color-line);
+    padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+  }
+  .nav-brand, .app-navigation .nav-settings { display: none; }
+  .nav-items {
+    display: flex;
+    height: var(--nav-height);
+    max-width: 36rem;
+    margin-inline: auto;
+    padding-inline: 0.25rem;
+  }
+  .nav-items > li { display: flex; flex: 1; min-width: 0; }
+  @media (max-width: 1023px) {
+    .nav-items > .nav-secondary { display: none; }
+    .app-navigation[data-keyboard] { visibility: hidden; }
+  }
+  .nav-item {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    color: var(--color-muted);
+    font-size: 0.6875rem;
+    font-weight: 550;
+    line-height: 1;
+  }
+  .nav-icon { display: flex; height: 24px; align-items: center; }
+  .nav-item[aria-current="page"] { color: var(--color-paper); }
+  .nav-item[aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto;
+    width: 24px;
+    height: 2px;
+    background: var(--tone, var(--color-accent));
+  }
+  .display-section { font-stretch: 90%; letter-spacing: -0.015em; }
+  .anime-primary { background: linear-gradient(110deg, var(--tone), color-mix(in srgb, var(--tone) 88%, #fff)); color: var(--tone-on); }
+
+  .home-screen { margin-inline: auto; max-width: 70rem; }
+  .home-header { padding-top: 1rem; padding-bottom: 2rem; }
+  .home-feed { --continue-card-width: min(63vw, 20rem); display: grid; grid-auto-flow: column; grid-auto-columns: var(--continue-card-width); gap: 0.75rem; padding-inline: var(--page-gutter); overflow-x: auto; scroll-padding-inline: var(--page-gutter); scroll-snap-type: x mandatory; }
+  .home-continue-body { min-height: calc(min(63vw, 20rem) * 9 / 16); }
+  .home-continue-body.home-continue-resolved-empty { min-height: 0; }
+  @media (max-width: 639px) {
+    .home-feed { scrollbar-width: none; }
+    .home-feed::-webkit-scrollbar { display: none; }
+    .player-center button svg { width: 24px; height: 24px; }
+    .player-bottom button svg { width: 17px; height: 17px; }
+  }
+  .home-feed > * { scroll-snap-align: start; scroll-snap-stop: always; }
+  .resume-card {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) 44px;
+    gap: 0.75rem;
+    align-items: center;
+    min-height: 112px;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: var(--color-raised);
+  }
+  .resume-card-title { font-size: 1rem; font-weight: 650; line-height: 1.2; }
+  .resume-card-body { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+  /*
+   * Anime page top. ONE stage — the picture, the title or logo and the season row (`.anime-season-controls`, placed over its bottom
+   * edge) — of a height that does NOT depend on the picture (`--hero-*` come from `heroStageVars`, the page and its loading state
+   * read the same ones): the loading state, a poster, a backdrop and a strip share it, so nothing moves when the picture arrives or
+   * another season is chosen. The picture is ONE layer dissolved by a mask into the page's black: no blurred copy, no mirror. Desktop
+   * keeps its bounded frame (below).
+   */
+  .anime-stage { --hero-w: min(100vw, var(--hero-max-w, 34rem)); --hero-h: calc(var(--safe-top) + var(--hero-w) * var(--hero-k, 1)); }
+  .anime-hero, .anime-hero-art { height: var(--hero-h); }
+  .hero-plate { inset-inline: 0; top: 0; height: calc(var(--hero-h) - var(--hero-inset, 8px)); -webkit-mask-image: var(--plate-mask); mask-image: var(--plate-mask); }
+  .hero-plate[data-hero-class="strip"] { height: calc(var(--safe-top) + var(--hero-w) * var(--hero-strip, 0.57)); }
+  /* A small cover, shown as an object on the page's ground (never enlarged into a backdrop). */
+  .hero-card { left: 50%; top: calc(var(--safe-top) + 1.5rem); transform: translateX(-50%); }
+  .hero-card > div { box-shadow: 0 18px 44px rgb(0 0 0 / 65%), 0 0 0 1px rgb(255 255 255 / 6%); }
+  /* The status bar and the round buttons stay legible over any picture, without darkening the picture itself. */
+  .hero-top-scrim { height: calc(var(--safe-top) + 5.5rem); background: linear-gradient(to bottom, rgb(0 0 0 / 38%), rgb(0 0 0 / 14%) 55%, transparent); }
+  .anime-hero[data-artwork-pending="true"] { background: radial-gradient(ellipse at 50% 25%, #101014, #030304 65%, #000); }
+  @media (max-width: 1023px) {
+    /* The season row (3 rem) is the stage's bottom edge; the title or logo sits right above it. A standalone work uses that space for its title. */
+    .anime-hero[data-has-seasons="true"] .anime-heading { bottom: 3.75rem; }
+    .anime-season-controls { position: absolute; inset-inline: 0; bottom: 100%; height: 3rem; margin-top: 0; }
+    .anime-heading { height: 7.75rem; }
+  }
+  .anime-heading { bottom: 0; min-width: 0; width: 100%; height: 10rem; padding-bottom: 0.5rem; }
+  /* A scrim behind the logo / title only: legible over any picture without darkening the whole art. */
+  .anime-heading::before { content: ""; position: absolute; inset: 0 0 -2.5rem; z-index: -1; pointer-events: none; background: linear-gradient(to top, transparent, rgb(0 0 0 / 52%) 2.5rem, rgb(0 0 0 / 52%) 4rem, rgb(0 0 0 / 34%) 55%, transparent 100%); }
+  /* A later season's title: the franchise's name keeps its size and place, the season is one small line under it. */
+  .title-main { display: block; }
+  .title-qualifier { display: block; margin-top: 0.4em; font-size: 0.4em; font-weight: 650; line-height: 1.2; letter-spacing: 0.16em; text-transform: uppercase; text-shadow: inherit; color: var(--color-cream, #f4f1ea); opacity: 0.92; }
+  .anime-heading .display-title { max-width: 100%; overflow-wrap: anywhere; text-wrap: balance; letter-spacing: -0.012em; word-spacing: 0.08em; text-shadow: 0 1px 3px rgb(0 0 0 / 70%), 0 2px 26px rgb(0 0 0 / 80%); }
+  /* A numbered season is only as wide as its glyphs (S1 = 19 px): the touch target grows sideways without moving anything, up to
+     the neighbour (the tabs sit 24 px apart, so two neighbours' slop meets halfway: 43 px wide, 44 tall). */
+  /*
+   * The season row: capsules that scroll sideways inside the page (never a native menu, never a sheet). A capsule with parts keeps ONE
+   * grey container — folded, only the part being read (named in full) and a chevron; unfolded, every part, the others widening from 0 —
+   * so nothing is replaced and nothing flashes. Hit areas are 44 px tall (the links), the drawing is 40 / 24 px.
+   */
+  .season-rail { display: flex; align-items: center; height: 3rem; gap: 0.25rem; }
+  .season-scroll { display: flex; align-items: center; gap: 0.375rem; height: 3rem; margin-inline: -1rem; padding-inline: 1rem 1.75rem; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1.75rem), transparent); mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1.75rem), transparent); }
+  .season-scroll::-webkit-scrollbar { display: none; }
+  .season-franchise { border-left: 1px solid var(--color-line); margin-left: 0.125rem; }
+  .season-capsule { display: flex; align-items: center; height: 2.5rem; border: 1px solid transparent; border-radius: 1.25rem; transition: background-color 180ms ease, border-color 180ms ease; }
+  .season-capsule[data-active="true"] { background: color-mix(in oklch, var(--tone, var(--color-accent)) 20%, #101013); border-color: color-mix(in oklch, var(--tone, var(--color-accent)) 52%, transparent); box-shadow: 0 0 0 1px rgb(0 0 0 / 50%), 0 6px 18px rgb(0 0 0 / 45%); }
+  .sc-label { display: flex; align-items: center; gap: 0.5rem; height: 2.75rem; padding-inline: 0.8rem; font-size: 15px; font-weight: 650; color: var(--color-soft); white-space: nowrap; }
+  .season-capsule[data-active="true"] .sc-label { color: var(--color-paper); }
+  .sc-sub { font-size: 12px; font-weight: 600; color: var(--color-muted); }
+  .sc-parts { display: inline-flex; align-items: center; height: 1.875rem; margin: 0 0.375rem 0 -0.1875rem; padding: 0.1875rem; border-radius: 0.9375rem; background: #26262b; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%); }
+  .sc-part { display: inline-flex; align-items: center; height: 2.75rem; margin-block: -0.4375rem; max-width: 8rem; overflow-x: clip; overflow-y: visible; font-size: 13px; font-weight: 650; color: var(--color-soft); white-space: nowrap; transition: max-width 220ms ease, opacity 160ms ease, color 180ms ease; }
+  .sc-part > span { display: inline-flex; align-items: center; height: 1.5rem; padding-inline: 0.6875rem; border-radius: 0.75rem; transition: background-color 180ms ease, color 180ms ease; }
+  .sc-part[data-active="true"] > span { background: var(--tone, var(--color-accent)); color: var(--tone-on, #0a0a0c); }
+  .season-capsule[data-open="false"] .sc-part[data-active="false"] { max-width: 0; opacity: 0; pointer-events: none; }
+  .sc-chev { flex: none; width: 1.125rem; height: 1.5rem; padding-inline: 0.0625rem; color: var(--color-soft); transition: width 220ms ease, opacity 160ms ease; }
+  .season-capsule[data-open="true"] .sc-chev { width: 0; padding: 0; opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { .season-capsule, .sc-part, .sc-part > span, .sc-chev { transition: none; } }
+  /* The episode to start or resume: framed in the work's colour, with a play mark on its thumbnail. */
+  .episode-next { background: var(--color-surface, #0c0c0f); box-shadow: 0 0 0 1px color-mix(in oklch, var(--tone, var(--color-accent)) 46%, transparent); }
+  .episode-glyph { position: absolute; inset: 0; display: grid; place-items: center; border-radius: var(--radius-poster); background: linear-gradient(rgb(0 0 0 / 5%), rgb(0 0 0 / 35%)); color: var(--color-paper); pointer-events: none; }
+  .episode-glyph > svg { box-sizing: content-box; padding: 0.5rem; border-radius: 9999px; background: rgb(0 0 0 / 55%); box-shadow: 0 0 0 1px rgb(255 255 255 / 25%); }
+  /* No episodes to list: a composed panel in the page's greys, never placeholder rows. */
+  .episodes-empty { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-block: 0.25rem; padding: 1.5rem 1.25rem; border-radius: 1.125rem; background: var(--color-surface, #0c0c0f); box-shadow: inset 0 0 0 1px var(--color-line); text-align: center; }
+  .episodes-empty-icon { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; margin-bottom: 0.25rem; border-radius: 9999px; background: var(--color-raised); color: var(--color-soft); }
+  .season-hit { position: relative; }
+  .season-hit::after { content: ""; position: absolute; inset-block: 0; inset-inline: -0.75rem; }
+  .anime-title-logo { position: relative; display: flex; align-items: center; justify-content: center; width: min(100%, 24rem); height: 100%; min-width: 0; }
+  .anime-title-logo img { display: block; width: 100%; height: auto; max-height: min(100%, 6.75rem); object-fit: contain; object-position: center; /* a soft light and a soft shadow: the logo closes the picture instead of sitting on it */ filter: drop-shadow(0 0 16px rgb(255 255 255 / 14%)) drop-shadow(0 2px 12px rgb(0 0 0 / 55%)); }
+  .hero-title-skeleton { position: absolute; width: min(60%, 16rem); height: 2rem; border-radius: 1rem; background: linear-gradient(90deg, transparent, #121216, transparent); }
+  .anime-poster { width: 5.5rem; }
+  .meta-line > :not(:empty) + :not(:empty)::before { content: "·"; margin-right: 0.5rem; color: var(--color-muted); }
+  .filmography-compact { min-height: 2.75rem; padding-block: 0.4rem; }
+  .filmography-compact .list-row-meta { font-size: 0.8125rem; }
+  @media (min-width: 1024px) {
+    .filmography-compact .list-row-content { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: baseline; gap: 1rem; }
+    .filmography-compact .list-row-meta > span { margin-top: 0; }
+  }
+  .season-content, .app-content > :first-child { animation: content-arrive 150ms ease-out; }
+  @keyframes content-arrive { from { opacity: 0.88; } to { opacity: 1; } }
+  @media (max-width: 1023px) {
+    .anime-heading .display-title { font-size: calc(clamp(1.75rem, 7.5vw, 2.25rem) * var(--title-scale, 1)); }
+    /* The logo's own proportions bound its height (lib/artwork/title-fit.ts): a stacked logo is not the biggest thing on the page. */
+    .anime-title-logo img { max-height: min(100%, var(--logo-h, 6.75rem)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .season-content, .app-content > :first-child { animation: none; }
+  }
+
+  @media (min-width: 1024px) {
+    .app-shell { --page-gutter: 2rem; }
+    .app-shell:not(.app-shell-immersive) > main { margin-left: var(--nav-rail-width); }
+    .app-shell:not(.app-shell-immersive) > .app-navigation {
+      inset: 0 auto 0 0;
+      transform: none;
+      width: var(--nav-rail-width);
+      display: flex;
+      flex-direction: column;
+      border-top: 0;
+      border-right: 1px solid var(--color-line);
+      padding: 1.5rem 1rem;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; margin-bottom: 2.5rem; font-size: 1.125rem; font-weight: 700; letter-spacing: -0.025em; }
+    .nav-items { flex-direction: column; height: auto; width: 100%; gap: 0.5rem; }
+    .nav-items > li { flex: none; }
+    .nav-item { flex-direction: row; justify-content: flex-start; gap: 0.875rem; min-height: 48px; padding: 0.75rem; font-size: 0.875rem; border-radius: var(--radius-control); }
+    .nav-item[aria-current="page"] { background: var(--color-raised); }
+    .nav-item[aria-current="page"]::before { inset: 14px auto 14px 0; height: auto; width: 2px; }
+    .app-navigation .nav-settings { display: flex; flex: none; margin-top: auto; }
+    .pb-nav { padding-bottom: 2rem; }
+    .home-header { padding-top: 2.5rem; padding-bottom: 3rem; }
+    .home-feed { --continue-card-width: 20rem; }
+    .home-continue-body { min-height: calc(20rem * 9 / 16); }
+    .anime-hero, .anime-hero-art { height: calc(29rem + var(--safe-top)); }
+    /* Desktop: a bounded, centred frame cropped inside the clamped ratio; its sides dissolve too from 1101 px. */
+    .hero-plate { margin-inline: auto; max-width: 1100px; max-height: 100%; height: auto; aspect-ratio: var(--hero-ratio, 2.3); -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%); mask-image: linear-gradient(to bottom, #000 45%, transparent 100%); }
+    .hero-plate[data-hero-class="strip"] { height: auto; }
+    .anime-heading { height: 12rem; }
+    .anime-title-logo { width: min(100%, 30rem); }
+    .anime-title-logo img { max-height: 10rem; }
+    .anime-poster { width: 8.5rem; }
+    .anime-heading .display-title { font-size: 3rem; }
+  }
+
+  @media (min-width: 1101px) {
+    .hero-plate { -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%), linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(to bottom, #000 45%, transparent 100%), linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); -webkit-mask-composite: source-in; mask-composite: intersect; }
+  }
+
+  .skeleton {
+    background: linear-gradient(100deg, var(--color-raised) 30%, var(--color-surface) 50%, var(--color-raised) 70%);
+    background-size: 300% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+}
+
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+
+/*
+ * Motion (RC8): small, GPU-friendly (opacity / transform), 150–220 ms, never decorative and never permanent. Reduced motion
+ * (below) turns every one of these into an instant change.
+ */
+dialog::backdrop {
+  animation: backdrop-in 200ms ease-out;
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.poster-fade {
+  transition: opacity 220ms ease-out;
+}
+.page-in {
+  animation: fade-in 200ms ease-out;
+}
+.app-content > .page-in {
+  animation: content-arrive 150ms ease-out;
+}
+/* Warm navigation already has its own content: do not dim all its decoded
+   images again. Cold pages and newly arriving images keep their transitions. */
+.app-content[data-returning] > :first-child,
+.app-content[data-returning] > .page-in {
+  animation: none;
+}
+@media (hover: hover) {
+  .lift {
+    transition: transform 150ms ease-out;
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton,
+  .page-in,
+  .app-content > .page-in,
+  .season-content {
+    animation: none;
+  }
+}
+
+/* ---------- Watch page ---------- */
+.watch-page { padding-top: var(--safe-top); }
+/*
+ * Desktop only: a centred player, never taller
+ * than the viewport leaves room for (it must not look like an accidental
+ * fullscreen). Mobile keeps the full-width, mobile-first layout.
+ */
+@media (min-width: 64rem) {
+  .watch-page {
+    --watch-max: min(1100px, calc((100dvh - 18rem) * 16 / 9));
+  }
+  .watch-shell {
+    width: 100%;
+    max-width: calc(var(--watch-max) + 4rem);
+    margin-inline: auto;
+    padding-inline: 2rem;
+  }
+}
+
+/*
+ * A tall desktop keeps one scrolling column inside the viewport. Episodes use the
+ * same accessible sheet as mobile. Phones and short windows keep normal page flow.
+ */
+@media (min-width: 64rem) and (min-height: 40rem) {
+  .watch-page {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .watch-layout {
+    flex: 1 1 0;
+    min-height: 0;
+    align-items: stretch;
+    padding-bottom: 1.5rem;
+  }
+  .watch-col {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/*
+ * A sheet (native <dialog>, modal) owns the screen: the page behind it neither scrolls nor rubber-bands.
+ * Installed PWA, watch page: no rubber-band either. The document is deliberately NOT locked in portrait
+ * (RC5 decision): permission notices, wrapped facts and a small phone can push the controls below the fold,
+ * and a fixed viewport would make them unreachable. Landscape keeps its validated lock (below).
+ */
+html:has(dialog[open]) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+html:has(.watch-page[data-display="standalone"]) {
+  overscroll-behavior-y: none;
+}
+
+/* ---------- Player ---------- */
+.player-range::-webkit-slider-runnable-track {
+  height: 44px;
+  background: transparent;
+}
+.player-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: var(--color-paper);
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.player-range::-moz-range-track {
+  height: 44px;
+  background: transparent;
+}
+.player-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--color-paper);
+  border: 0;
+}
+.player-range:disabled::-webkit-slider-thumb {
+  opacity: 0;
+}
+/* A precise thumb that grows under the finger / pointer (the 44px hit area never changes). */
+.player-range::-webkit-slider-thumb {
+  transition: transform 120ms ease-out;
+}
+.player-range:hover::-webkit-slider-thumb,
+.player-range:active::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+
+/* In fullscreen / landscape, keep controls clear of the notch and home indicator. */
+.player-root:fullscreen .player-top,
+.player-root:fullscreen .player-bottom {
+  padding-left: max(1rem, var(--safe-left));
+  padding-right: max(1rem, var(--safe-right));
+}
+.player-root:fullscreen .player-bottom {
+  padding-bottom: max(0.5rem, var(--safe-bottom));
+}
+
+/*
+ * Landscape on a phone, two different worlds (RC6):
+ *  - Installed PWA (`data-display="standalone"`): Maximanim's own player is the whole screen (validated on a real iPhone).
+ *  - Safari tab (`data-display="browser"`): no CSS fake fullscreen — the page stays a page, the stage is only capped to
+ *    the screen height, and the fullscreen button calls Apple's native player from the tap (webkitEnterFullscreen needs
+ *    a user gesture, so an orientation change never triggers it).
+ */
+@media (orientation: landscape) and (max-height: 540px) {
+  .watch-page[data-display="standalone"] .watch-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    height: 100dvh;
+    aspect-ratio: auto;
+  }
+  .watch-page[data-display="standalone"]:has(.watch-next) .watch-stage {
+    height: calc(100dvh - 60px - var(--safe-bottom));
+  }
+  .watch-page[data-display="standalone"]:has([data-testid="next-countdown"]) .watch-stage {
+    height: calc(100dvh - 104px - var(--safe-bottom));
+  }
+  .watch-page[data-display="standalone"] [data-testid="next-countdown"] {
+    position: fixed;
+    inset-inline: 0;
+    bottom: calc(60px + var(--safe-bottom));
+    z-index: 60;
+    height: 44px;
+    background: var(--color-ink);
+  }
+  .watch-page[data-display="standalone"] .watch-next {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 60;
+    height: calc(60px + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    background: var(--color-ink);
+  }
+  .watch-page[data-display="standalone"] .watch-details {
+    display: none;
+  }
+  /* Nothing behind the stage may scroll or rubber-band (portrait scrolls again as soon as the phone turns back). */
+  .watch-page[data-display="standalone"] {
+    height: 100dvh;
+    padding-top: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  html:has(.watch-page[data-display="standalone"]) {
+    overscroll-behavior: none;
+  }
+  .watch-page[data-display="standalone"] .player-top,
+  .watch-page[data-display="standalone"] .player-bottom {
+    padding-left: max(1rem, var(--safe-left));
+    padding-right: max(1rem, var(--safe-right));
+  }
+  .watch-page[data-display="standalone"] .player-bottom {
+    padding-bottom: max(0.5rem, var(--safe-bottom));
+  }
+  /* Safari tab: the picture never taller than the screen (letterboxed by object-contain), the page below scrolls. */
+  .watch-page[data-display="browser"] .watch-stage {
+    max-height: 100dvh;
+  }
+}
+
+/*
+ * Installed PWA, landscape: Maximanim's own player is the whole screen (validated on a
+ * real iPhone). The top chrome is only a whisper: a short, light scrim and a smaller
+ * episode line, so the picture keeps the height. Side safe areas come from the rules
+ * above; the centre controls stay centred, the timeline keeps the home-indicator clearance.
+ */
+@media (orientation: landscape) and (max-height: 540px) {
+  .watch-page[data-display="standalone"] .player-top {
+    padding-bottom: 1rem;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+  }
+  .watch-page[data-display="standalone"] .player-top [data-testid="player-context"] p:last-child {
+    font-size: 14px;
+    line-height: 1.25rem;
+  }
+}
+
+/* The source control (top-right) is always there; the page header already names the episode inline, so the overlay's
+   own title is for immersive modes only. */
+.player-top {
+  display: flex;
+  padding-top: 0.5rem;
+}
+/* The player's own top bar sits under the page header (which already clears the notch): only a picture that touches the
+   top of the screen — container fullscreen — needs the inset. */
+.player-root:fullscreen .player-top {
+  padding-top: max(0.5rem, var(--safe-top));
+}
+/* Keep Back on the stage while the picture is loading, including standalone landscape. */
+.stage-back {
+  display: block;
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .watch-page[data-display="standalone"] .stage-back {
+    display: block;
+  }
+  .watch-page[data-display="standalone"] .stage-chrome {
+    padding-left: max(1rem, var(--safe-left));
+    padding-right: max(1rem, var(--safe-right));
+  }
+}
+.player-top [data-testid="player-context"] {
+  display: none;
+}
+.player-root:fullscreen .player-top [data-testid="player-context"] {
+  display: block;
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .watch-page[data-display="standalone"] .player-top [data-testid="player-context"] {
+    display: block;
+  }
+}
+
+/*
+ * Subtitle looks: the engine's own WebVTT rendering, styled through ::cue (only the properties ::cue allows).
+ * Vertical placement is not CSS: ordinary cues get `line:<n>%,end` when the file is converted (lib/subtitles/load.ts).
+ * Principles taken from professional subtitling (Netflix Timed Text Style Guide: centred, at the bottom, two lines at
+ * most) and adapted to a phone-sized picture: white text, a modest size, a thin outline, never a box, no glow.
+ * The looks must read as different at a glance — the difference is colour, weight, outline or backing, NEVER size (RC9.1:
+ * they all share one base size, 16px / 4.6vw / 26px; the size slider alone changes it, see the size rules below):
+ *   Standard  (key `cinema`)    white, medium weight, almost no outline (a ~0.5 px ring) and one short, clean dark drop;
+ *   Lisible   (default for a new profile, key `readable`)  the accessibility variant: white, bold, a crisp ~1.7 px black outline, no box;
+ *   Cinéma    (key `film`)      warm off-white, semi-bold, a crisp ~1.1 px dark edge, no glow, no box;
+ *   Contraste (key `contrast`)  white on a compact translucent black backing (the engine's own per-line box): bright scenes;
+ *   Discret   (key `minimal`)   legacy, no longer offered: smaller, regular, slightly dimmed, a faint soft shadow.
+ * The contour is the viewer's (data-cue-outline, a slider): hard shadows on a ring, never a blur or a stack of glows (RC9.2).
+ * Safari's native fullscreen renders captions itself and may ignore all of this: accepted, never fought.
+ * One rule per selector: an engine that does not know ::cue must not drop the others.
+ */
+video[data-cue-style="cinema"]::cue {
+  color: #fff;
+  background-color: transparent;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(16px, 4.6vw, 26px);
+  font-weight: 500;
+  line-height: 1.25;
+}
+video[data-cue-style="readable"]::cue {
+  color: #fff;
+  background-color: transparent;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(16px, 4.6vw, 26px);
+  font-weight: 700;
+  line-height: 1.25;
+}
+video[data-cue-style="film"]::cue {
+  color: #fbf1da;
+  background-color: transparent;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(16px, 4.6vw, 26px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+video[data-cue-style="contrast"]::cue {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.62);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(16px, 4.6vw, 26px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+video[data-cue-style="minimal"]::cue {
+  color: rgba(244, 241, 234, 0.9);
+  background-color: transparent;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(12px, 3.2vw, 18px);
+  font-weight: 400;
+  line-height: 1.2;
+  text-shadow:
+    0 0 1px rgba(0, 0, 0, 0.85),
+    0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/*
+ * The contour (RC9.2): a crisp ring of hard, unblurred shadows, ten steps (SUBTITLES.outline.radii, lib/subtitles/style.ts
+ * ringShadow writes these very strings: a unit test compares them). Standard adds one short, clean drop under the ring.
+ * Contraste (a backing) and Discret (legacy) have no ring: their own rules above are all they get.
+ */
+video[data-cue-style="cinema"][data-cue-outline="0"]::cue { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="1"]::cue { text-shadow: 0.5px 0px 0 #000, 0.35px 0.35px 0 #000, 0px 0.5px 0 #000, -0.35px 0.35px 0 #000, -0.5px 0px 0 #000, -0.35px -0.35px 0 #000, 0px -0.5px 0 #000, 0.35px -0.35px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="2"]::cue { text-shadow: 0.8px 0px 0 #000, 0.57px 0.57px 0 #000, 0px 0.8px 0 #000, -0.57px 0.57px 0 #000, -0.8px 0px 0 #000, -0.57px -0.57px 0 #000, 0px -0.8px 0 #000, 0.57px -0.57px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="3"]::cue { text-shadow: 1.1px 0px 0 #000, 0.78px 0.78px 0 #000, 0px 1.1px 0 #000, -0.78px 0.78px 0 #000, -1.1px 0px 0 #000, -0.78px -0.78px 0 #000, 0px -1.1px 0 #000, 0.78px -0.78px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="4"]::cue { text-shadow: 1.4px 0px 0 #000, 1.21px 0.7px 0 #000, 0.7px 1.21px 0 #000, 0px 1.4px 0 #000, -0.7px 1.21px 0 #000, -1.21px 0.7px 0 #000, -1.4px 0px 0 #000, -1.21px -0.7px 0 #000, -0.7px -1.21px 0 #000, 0px -1.4px 0 #000, 0.7px -1.21px 0 #000, 1.21px -0.7px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="5"]::cue { text-shadow: 1.7px 0px 0 #000, 1.47px 0.85px 0 #000, 0.85px 1.47px 0 #000, 0px 1.7px 0 #000, -0.85px 1.47px 0 #000, -1.47px 0.85px 0 #000, -1.7px 0px 0 #000, -1.47px -0.85px 0 #000, -0.85px -1.47px 0 #000, 0px -1.7px 0 #000, 0.85px -1.47px 0 #000, 1.47px -0.85px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="6"]::cue { text-shadow: 2px 0px 0 #000, 1.73px 1px 0 #000, 1px 1.73px 0 #000, 0px 2px 0 #000, -1px 1.73px 0 #000, -1.73px 1px 0 #000, -2px 0px 0 #000, -1.73px -1px 0 #000, -1px -1.73px 0 #000, 0px -2px 0 #000, 1px -1.73px 0 #000, 1.73px -1px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="7"]::cue { text-shadow: 2.4px 0px 0 #000, 2.22px 0.92px 0 #000, 1.7px 1.7px 0 #000, 0.92px 2.22px 0 #000, 0px 2.4px 0 #000, -0.92px 2.22px 0 #000, -1.7px 1.7px 0 #000, -2.22px 0.92px 0 #000, -2.4px 0px 0 #000, -2.22px -0.92px 0 #000, -1.7px -1.7px 0 #000, -0.92px -2.22px 0 #000, 0px -2.4px 0 #000, 0.92px -2.22px 0 #000, 1.7px -1.7px 0 #000, 2.22px -0.92px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="8"]::cue { text-shadow: 2.8px 0px 0 #000, 2.59px 1.07px 0 #000, 1.98px 1.98px 0 #000, 1.07px 2.59px 0 #000, 0px 2.8px 0 #000, -1.07px 2.59px 0 #000, -1.98px 1.98px 0 #000, -2.59px 1.07px 0 #000, -2.8px 0px 0 #000, -2.59px -1.07px 0 #000, -1.98px -1.98px 0 #000, -1.07px -2.59px 0 #000, 0px -2.8px 0 #000, 1.07px -2.59px 0 #000, 1.98px -1.98px 0 #000, 2.59px -1.07px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="cinema"][data-cue-outline="9"]::cue { text-shadow: 3.2px 0px 0 #000, 2.96px 1.22px 0 #000, 2.26px 2.26px 0 #000, 1.22px 2.96px 0 #000, 0px 3.2px 0 #000, -1.22px 2.96px 0 #000, -2.26px 2.26px 0 #000, -2.96px 1.22px 0 #000, -3.2px 0px 0 #000, -2.96px -1.22px 0 #000, -2.26px -2.26px 0 #000, -1.22px -2.96px 0 #000, 0px -3.2px 0 #000, 1.22px -2.96px 0 #000, 2.26px -2.26px 0 #000, 2.96px -1.22px 0 #000, 0 1px 2px rgba(0, 0, 0, 0.9); }
+video[data-cue-style="readable"][data-cue-outline="0"]::cue { text-shadow: none; }
+video[data-cue-style="readable"][data-cue-outline="1"]::cue { text-shadow: 0.5px 0px 0 #000, 0.35px 0.35px 0 #000, 0px 0.5px 0 #000, -0.35px 0.35px 0 #000, -0.5px 0px 0 #000, -0.35px -0.35px 0 #000, 0px -0.5px 0 #000, 0.35px -0.35px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="2"]::cue { text-shadow: 0.8px 0px 0 #000, 0.57px 0.57px 0 #000, 0px 0.8px 0 #000, -0.57px 0.57px 0 #000, -0.8px 0px 0 #000, -0.57px -0.57px 0 #000, 0px -0.8px 0 #000, 0.57px -0.57px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="3"]::cue { text-shadow: 1.1px 0px 0 #000, 0.78px 0.78px 0 #000, 0px 1.1px 0 #000, -0.78px 0.78px 0 #000, -1.1px 0px 0 #000, -0.78px -0.78px 0 #000, 0px -1.1px 0 #000, 0.78px -0.78px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="4"]::cue { text-shadow: 1.4px 0px 0 #000, 1.21px 0.7px 0 #000, 0.7px 1.21px 0 #000, 0px 1.4px 0 #000, -0.7px 1.21px 0 #000, -1.21px 0.7px 0 #000, -1.4px 0px 0 #000, -1.21px -0.7px 0 #000, -0.7px -1.21px 0 #000, 0px -1.4px 0 #000, 0.7px -1.21px 0 #000, 1.21px -0.7px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="5"]::cue { text-shadow: 1.7px 0px 0 #000, 1.47px 0.85px 0 #000, 0.85px 1.47px 0 #000, 0px 1.7px 0 #000, -0.85px 1.47px 0 #000, -1.47px 0.85px 0 #000, -1.7px 0px 0 #000, -1.47px -0.85px 0 #000, -0.85px -1.47px 0 #000, 0px -1.7px 0 #000, 0.85px -1.47px 0 #000, 1.47px -0.85px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="6"]::cue { text-shadow: 2px 0px 0 #000, 1.73px 1px 0 #000, 1px 1.73px 0 #000, 0px 2px 0 #000, -1px 1.73px 0 #000, -1.73px 1px 0 #000, -2px 0px 0 #000, -1.73px -1px 0 #000, -1px -1.73px 0 #000, 0px -2px 0 #000, 1px -1.73px 0 #000, 1.73px -1px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="7"]::cue { text-shadow: 2.4px 0px 0 #000, 2.22px 0.92px 0 #000, 1.7px 1.7px 0 #000, 0.92px 2.22px 0 #000, 0px 2.4px 0 #000, -0.92px 2.22px 0 #000, -1.7px 1.7px 0 #000, -2.22px 0.92px 0 #000, -2.4px 0px 0 #000, -2.22px -0.92px 0 #000, -1.7px -1.7px 0 #000, -0.92px -2.22px 0 #000, 0px -2.4px 0 #000, 0.92px -2.22px 0 #000, 1.7px -1.7px 0 #000, 2.22px -0.92px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="8"]::cue { text-shadow: 2.8px 0px 0 #000, 2.59px 1.07px 0 #000, 1.98px 1.98px 0 #000, 1.07px 2.59px 0 #000, 0px 2.8px 0 #000, -1.07px 2.59px 0 #000, -1.98px 1.98px 0 #000, -2.59px 1.07px 0 #000, -2.8px 0px 0 #000, -2.59px -1.07px 0 #000, -1.98px -1.98px 0 #000, -1.07px -2.59px 0 #000, 0px -2.8px 0 #000, 1.07px -2.59px 0 #000, 1.98px -1.98px 0 #000, 2.59px -1.07px 0 #000; }
+video[data-cue-style="readable"][data-cue-outline="9"]::cue { text-shadow: 3.2px 0px 0 #000, 2.96px 1.22px 0 #000, 2.26px 2.26px 0 #000, 1.22px 2.96px 0 #000, 0px 3.2px 0 #000, -1.22px 2.96px 0 #000, -2.26px 2.26px 0 #000, -2.96px 1.22px 0 #000, -3.2px 0px 0 #000, -2.96px -1.22px 0 #000, -2.26px -2.26px 0 #000, -1.22px -2.96px 0 #000, 0px -3.2px 0 #000, 1.22px -2.96px 0 #000, 2.26px -2.26px 0 #000, 2.96px -1.22px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="0"]::cue { text-shadow: none; }
+video[data-cue-style="film"][data-cue-outline="1"]::cue { text-shadow: 0.5px 0px 0 #000, 0.35px 0.35px 0 #000, 0px 0.5px 0 #000, -0.35px 0.35px 0 #000, -0.5px 0px 0 #000, -0.35px -0.35px 0 #000, 0px -0.5px 0 #000, 0.35px -0.35px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="2"]::cue { text-shadow: 0.8px 0px 0 #000, 0.57px 0.57px 0 #000, 0px 0.8px 0 #000, -0.57px 0.57px 0 #000, -0.8px 0px 0 #000, -0.57px -0.57px 0 #000, 0px -0.8px 0 #000, 0.57px -0.57px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="3"]::cue { text-shadow: 1.1px 0px 0 #000, 0.78px 0.78px 0 #000, 0px 1.1px 0 #000, -0.78px 0.78px 0 #000, -1.1px 0px 0 #000, -0.78px -0.78px 0 #000, 0px -1.1px 0 #000, 0.78px -0.78px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="4"]::cue { text-shadow: 1.4px 0px 0 #000, 1.21px 0.7px 0 #000, 0.7px 1.21px 0 #000, 0px 1.4px 0 #000, -0.7px 1.21px 0 #000, -1.21px 0.7px 0 #000, -1.4px 0px 0 #000, -1.21px -0.7px 0 #000, -0.7px -1.21px 0 #000, 0px -1.4px 0 #000, 0.7px -1.21px 0 #000, 1.21px -0.7px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="5"]::cue { text-shadow: 1.7px 0px 0 #000, 1.47px 0.85px 0 #000, 0.85px 1.47px 0 #000, 0px 1.7px 0 #000, -0.85px 1.47px 0 #000, -1.47px 0.85px 0 #000, -1.7px 0px 0 #000, -1.47px -0.85px 0 #000, -0.85px -1.47px 0 #000, 0px -1.7px 0 #000, 0.85px -1.47px 0 #000, 1.47px -0.85px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="6"]::cue { text-shadow: 2px 0px 0 #000, 1.73px 1px 0 #000, 1px 1.73px 0 #000, 0px 2px 0 #000, -1px 1.73px 0 #000, -1.73px 1px 0 #000, -2px 0px 0 #000, -1.73px -1px 0 #000, -1px -1.73px 0 #000, 0px -2px 0 #000, 1px -1.73px 0 #000, 1.73px -1px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="7"]::cue { text-shadow: 2.4px 0px 0 #000, 2.22px 0.92px 0 #000, 1.7px 1.7px 0 #000, 0.92px 2.22px 0 #000, 0px 2.4px 0 #000, -0.92px 2.22px 0 #000, -1.7px 1.7px 0 #000, -2.22px 0.92px 0 #000, -2.4px 0px 0 #000, -2.22px -0.92px 0 #000, -1.7px -1.7px 0 #000, -0.92px -2.22px 0 #000, 0px -2.4px 0 #000, 0.92px -2.22px 0 #000, 1.7px -1.7px 0 #000, 2.22px -0.92px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="8"]::cue { text-shadow: 2.8px 0px 0 #000, 2.59px 1.07px 0 #000, 1.98px 1.98px 0 #000, 1.07px 2.59px 0 #000, 0px 2.8px 0 #000, -1.07px 2.59px 0 #000, -1.98px 1.98px 0 #000, -2.59px 1.07px 0 #000, -2.8px 0px 0 #000, -2.59px -1.07px 0 #000, -1.98px -1.98px 0 #000, -1.07px -2.59px 0 #000, 0px -2.8px 0 #000, 1.07px -2.59px 0 #000, 1.98px -1.98px 0 #000, 2.59px -1.07px 0 #000; }
+video[data-cue-style="film"][data-cue-outline="9"]::cue { text-shadow: 3.2px 0px 0 #000, 2.96px 1.22px 0 #000, 2.26px 2.26px 0 #000, 1.22px 2.96px 0 #000, 0px 3.2px 0 #000, -1.22px 2.96px 0 #000, -2.26px 2.26px 0 #000, -2.96px 1.22px 0 #000, -3.2px 0px 0 #000, -2.96px -1.22px 0 #000, -2.26px -2.26px 0 #000, -1.22px -2.96px 0 #000, 0px -3.2px 0 #000, 1.22px -2.96px 0 #000, 2.26px -2.26px 0 #000, 2.96px -1.22px 0 #000; }
+
+/*
+ * Subtitle size (RC8): the style's own font size times the viewer's step (SUBTITLES.size.multipliers = 0.85 / 1 / 1.15 /
+ * 1.3 / 1.5 / 0.7; step 1 is the base rule above, so it has none; step 5 was appended by RC9.1, the indices never move). Literal numbers per style rather than a CSS variable: ::cue
+ * cannot be relied on to read custom properties on every engine. One rule per selector, like the looks.
+ */
+video[data-cue-style="cinema"][data-cue-size="5"]::cue { font-size: clamp(11px, 3.2vw, 18px); }
+video[data-cue-style="cinema"][data-cue-size="0"]::cue { font-size: clamp(14px, 3.9vw, 22px); }
+video[data-cue-style="cinema"][data-cue-size="2"]::cue { font-size: clamp(18px, 5.3vw, 30px); }
+video[data-cue-style="cinema"][data-cue-size="3"]::cue { font-size: clamp(21px, 6vw, 34px); }
+video[data-cue-style="cinema"][data-cue-size="4"]::cue { font-size: clamp(24px, 6.9vw, 39px); }
+video[data-cue-style="readable"][data-cue-size="5"]::cue { font-size: clamp(11px, 3.2vw, 18px); }
+video[data-cue-style="readable"][data-cue-size="0"]::cue { font-size: clamp(14px, 3.9vw, 22px); }
+video[data-cue-style="readable"][data-cue-size="2"]::cue { font-size: clamp(18px, 5.3vw, 30px); }
+video[data-cue-style="readable"][data-cue-size="3"]::cue { font-size: clamp(21px, 6vw, 34px); }
+video[data-cue-style="readable"][data-cue-size="4"]::cue { font-size: clamp(24px, 6.9vw, 39px); }
+video[data-cue-style="film"][data-cue-size="5"]::cue { font-size: clamp(11px, 3.2vw, 18px); }
+video[data-cue-style="film"][data-cue-size="0"]::cue { font-size: clamp(14px, 3.9vw, 22px); }
+video[data-cue-style="film"][data-cue-size="2"]::cue { font-size: clamp(18px, 5.3vw, 30px); }
+video[data-cue-style="film"][data-cue-size="3"]::cue { font-size: clamp(21px, 6vw, 34px); }
+video[data-cue-style="film"][data-cue-size="4"]::cue { font-size: clamp(24px, 6.9vw, 39px); }
+video[data-cue-style="contrast"][data-cue-size="5"]::cue { font-size: clamp(11px, 3.2vw, 18px); }
+video[data-cue-style="contrast"][data-cue-size="0"]::cue { font-size: clamp(14px, 3.9vw, 22px); }
+video[data-cue-style="contrast"][data-cue-size="2"]::cue { font-size: clamp(18px, 5.3vw, 30px); }
+video[data-cue-style="contrast"][data-cue-size="3"]::cue { font-size: clamp(21px, 6vw, 34px); }
+video[data-cue-style="contrast"][data-cue-size="4"]::cue { font-size: clamp(24px, 6.9vw, 39px); }
+video[data-cue-style="minimal"][data-cue-size="5"]::cue { font-size: clamp(8px, 2.2vw, 13px); }
+video[data-cue-style="minimal"][data-cue-size="0"]::cue { font-size: clamp(10px, 2.7vw, 15px); }
+video[data-cue-style="minimal"][data-cue-size="2"]::cue { font-size: clamp(14px, 3.7vw, 21px); }
+video[data-cue-style="minimal"][data-cue-size="3"]::cue { font-size: clamp(16px, 4.2vw, 23px); }
+video[data-cue-style="minimal"][data-cue-size="4"]::cue { font-size: clamp(18px, 4.8vw, 27px); }
+
+/*
+ * Preview of the subtitle look (RC8): a mock-up of the ::cue rendering above in plain HTML, sized in container units so
+ * it scales with the preview frame. It only explains a choice; the video itself keeps the browser's own captions.
+ * The text sits with its BOTTOM edge on `top` (the cue's `line`), like `line:<n>%,end`. The preview is a miniature of the
+ * picture, so a look's font size is the same share of the frame's width as the real cue's (4.9vw on a phone-wide picture
+ * = 4.9cqw), which keeps the lines' occupancy honest. The scene has a bright band under the text: a backing (Contraste)
+ * and an outline (Cinéma) only show their worth over a light picture.
+ */
+.cue-preview {
+  container-type: size;
+  background: var(--color-ink-deep);
+}
+.cue-preview-scene {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 14%, transparent) 0%, transparent 46%),
+    linear-gradient(180deg, transparent 52%, rgba(244, 241, 234, 0.34) 78%, rgba(244, 241, 234, 0.12) 100%),
+    linear-gradient(180deg, #2a2d36 0%, #171920 62%, #0d0e12 100%);
+}
+.cue-preview-text {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  transform: translateY(-100%);
+  text-align: center;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #fff;
+  line-height: 1.25;
+  transition: top 160ms var(--ease-snap), font-size 160ms var(--ease-snap);
+}
+/* The contour (text-shadow) is written inline from the same function as the ::cue rules (lib/subtitles/style.ts). */
+.cue-preview[data-cue-style="cinema"] .cue-preview-text {
+  font-size: calc(4.6cqw * var(--cue-k, 1));
+  font-weight: 500;
+}
+.cue-preview[data-cue-style="readable"] .cue-preview-text {
+  font-size: calc(4.6cqw * var(--cue-k, 1));
+  font-weight: 700;
+}
+.cue-preview[data-cue-style="film"] .cue-preview-text {
+  font-size: calc(4.6cqw * var(--cue-k, 1));
+  font-weight: 600;
+  color: #fbf1da;
+}
+.cue-preview[data-cue-style="contrast"] .cue-preview-text {
+  font-size: calc(4.6cqw * var(--cue-k, 1));
+  font-weight: 600;
+}
+/* The engine draws the backing line by line, hugging each line: so does the mock-up. */
+.cue-preview[data-cue-style="contrast"] .cue-preview-text span {
+  background: rgba(0, 0, 0, 0.62);
+  padding: 0 0.3em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.cue-preview[data-cue-style="minimal"] .cue-preview-text {
+  font-size: calc(3.2cqw * var(--cue-k, 1));
+  font-weight: 400;
+  line-height: 1.2;
+  color: rgba(244, 241, 234, 0.9);
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cue-preview-text {
+    transition: none;
+  }
+}
+
+/* Keep the only Back control circular and inside the picture, away from the timeline. */
+.stage-back button, .player-back button { margin-left: 0; border-radius: 9999px; }
+/*
+ * Under the player: the episode's team as a compact two-column grid (a role in small capitals over a name, a 40 px portrait only when
+ * every person has a verified one), then one row to the whole team. Hit areas are 44 px or more; colours are the page's own greys and
+ * its contextual accent.
+ */
+.credit-eyebrow { display: flex; align-items: center; min-height: 1.5rem; margin: 0; font-size: 12px; font-weight: 700; line-height: 1.2; letter-spacing: 0.09em; text-transform: uppercase; }
+.credit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; margin: 0; padding: 0; list-style: none; }
+.credit-person { display: flex; align-items: center; gap: 0.75rem; min-height: 3.375rem; min-width: 0; }
+.credit-role { font-size: 11.5px; font-weight: 700; line-height: 1.2; letter-spacing: 0.09em; text-transform: uppercase; color: var(--color-muted); }
+.credit-name { display: block; font-size: 16px; font-weight: 650; line-height: 1.2; color: var(--color-paper); }
+.credit-person[href] .credit-name { text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: 3px; }
+.credit-all { display: flex; align-items: center; gap: 0.75rem; min-height: 3.5rem; margin-top: 0.5rem; border-top: 1px solid var(--color-line); }
+/*
+ * The quick search: ONE native modal dialog, full screen and transparent; the page behind is dimmed and only lightly blurred (a small
+ * radius, set once on the backdrop, never animated — cheap on a phone), the panel sits under the status bar and the Dynamic Island
+ * and is bounded by what the screen really shows (the visual viewport, shorter while the keyboard is up).
+ */
+.search-overlay { inset: 0; margin: 0; padding: 0; width: 100%; height: 100%; max-width: none; max-height: none; border: 0; background: transparent; color: var(--color-paper); overflow: hidden; }
+.search-overlay::backdrop { background: rgb(0 0 0 / 0.64); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+@media (prefers-reduced-transparency: reduce) { .search-overlay::backdrop { background: rgb(0 0 0 / 0.88); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+.search-overlay-panel { display: flex; flex-direction: column; margin: calc(var(--safe-top) + 0.5rem) auto 0; width: min(calc(100% - 1.5rem), 34rem); max-height: calc(var(--overlay-h, 100dvh) - var(--safe-top) - 1rem); overflow: hidden; border: 1px solid var(--color-line); border-radius: 1.125rem; background: #0c0c0f; box-shadow: 0 18px 60px rgb(0 0 0 / 55%); animation: overlay-in 160ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .search-overlay-panel { animation: none; } }
+@keyframes overlay-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.search-overlay-input { flex: 1; min-width: 0; height: 3.25rem; border: 0; background: transparent; color: var(--color-paper); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
+.search-overlay-input::placeholder { color: var(--color-muted); }
+.search-overlay-input::-webkit-search-cancel-button { display: none; }
+.search-overlay-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 0.25rem; }
+.search-overlay-row { display: flex; align-items: center; gap: 0.75rem; min-height: 4rem; padding: 0.375rem 1rem; }
+.search-overlay-row:active { background: var(--color-raised, #19191d); }
+.search-overlay-all { display: flex; align-items: center; justify-content: center; min-height: 3rem; margin: 0.25rem 1rem 0.5rem; border-top: 1px solid var(--color-line); font-size: 14.5px; font-weight: 650; color: var(--tone, var(--color-accent)); }
+@media (max-width: 1023px) {
+  .watch-col { gap: 0.5rem; }
+  .watch-panel { padding-top: 0; }
+}
+
+/* Compact filmographies share column geometry across years and entities. */
+.compact-work-group + .compact-work-group { border-top: 1px solid var(--color-line); }
+.compact-work-row { display: grid; grid-template-columns: 3rem minmax(0,1fr); column-gap: .6rem; row-gap: .1rem; min-height: 44px; padding: .45rem .4rem; border-radius: 3px; align-items: baseline; }
+.compact-work-year { grid-row: span 2; color: var(--color-soft); font-size: 12px; }
+.compact-work-title { font-size: 14px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere; }
+.compact-work-roles { font-size: 12px; line-height: 1.4; color: var(--color-soft); overflow-wrap: anywhere; }
+.compact-work-roles > span { margin-left: .5rem; }
+.compact-work-group li:nth-child(even) { background: rgb(255 255 255 / 2%); }
+.compact-work-row:hover { background: var(--color-raised); }
+.compact-work-row:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.season-source { color: #bab7d9; }
+.season-source[data-source="MANGA"] { color: #d4c4a3; }
+.season-source[data-source="ORIGINAL"] { color: #b0ccda; }
+.season-source[data-source="VIDEO_GAME"], .season-source[data-source="VISUAL_NOVEL"] { color: #cbb7cd; }
+.season-status { color: var(--color-soft); }
+.season-status[data-status="RELEASING"] { color: #a9c8b4; }
+.season-status[data-status="NOT_YET_RELEASED"] { color: #d8c8a0; }
+.season-status[data-status="CANCELLED"] { color: #d9abae; }
+@media (min-width: 1024px) {
+  .compact-work-row { grid-template-columns: 3rem minmax(0,1.05fr) minmax(0,1fr); min-height: 36px; padding-block: .45rem; column-gap: 1rem; }
+  .compact-work-year { grid-row: auto; }
+  .compact-work-title { color: color-mix(in srgb, var(--color-paper) 94%, var(--color-accent)); }
+  .compact-work-roles { font-size: 13px; }
+}
+
+/* Planning: « Gérer les suivis » is a real secondary action (RC10 line + brand pink), not a text link. Unlayered so it wins over the
+   Button variant's utility border/background without !important. */
+.follows-manage { min-height: 44px; padding-inline: 0.875rem; gap: 0.5rem; font-size: 14px; border-color: color-mix(in srgb, var(--color-accent) 60%, var(--color-line)); background: var(--color-surface); color: var(--color-paper); }
+.follows-manage svg { color: var(--color-accent); }
+.follows-manage:hover { background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface)); }
+.follows-manage:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
