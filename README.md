@@ -45,14 +45,14 @@ It started as a personal project and became a responsive web app designed around
 
 ![MaximAnim desktop layout](docs/images/desktop.webp)
 
-*All UI screenshots come from the running portfolio build, not redesigned mock screens. The phone frames are stylized compositions captured at 393 × 852 CSS pixels.*
+*All UI screenshots come from the running portfolio build, not redesigned mock screens. The screens were captured at 393 × 852 CSS pixels and placed in stylized phone frames.*
 
 ## What it does
 
 - **Discover anime.** Search AniList's catalogue, browse seasonal releases and follow related works, people and studios.
 - **Follow episodes.** Track watched episodes and resume position. Upcoming releases appear in the calendar.
 - **Keep a library.** Organise your titles and progress locally, even without signing in.
-- **Move between devices and layouts.** The responsive interface works in a browser and can be installed as a PWA. Catalogue requests still require a connection.
+- **Use it on different screen sizes.** The responsive interface works in a browser and can be installed as a PWA. Catalogue requests still require a connection.
 
 ## A real interface, a different video
 
