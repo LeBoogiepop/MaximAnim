@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const deniedPath = /(^|\/)(\.git|\.vercel|sandbox)(\/|$)|^src\/server\/|^src\/lib\/(extensions|cloud|sync)\/|^src\/lib\/repositories\/(?!types\.ts$)|^src\/features\/sources\/|^src\/app\/api\/(?!version\/|health\/)/;
 const deniedText = /hianime|justanime|voiranime|anime-sama|animeheaven|PLAYBACK_RELAY_SECRET|SUPABASE_SERVICE_ROLE|BEGIN (?:RSA |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{30,}/i;
+const retiredMedia = /(^public\/demo-media\/|^scripts\/generate-portfolio-media\.mjs$|^src\/features\/player\/VideoPlayer\.tsx$)/;
 const failures = [];
 let count = 0;
 function scan(dir) {
@@ -11,7 +12,7 @@ function scan(dir) {
     if (dir === '.' && entry.name === '.git' && entry.isDirectory()) continue;
     if (['node_modules', '.next'].includes(entry.name)) continue;
     const file = path.posix.join(dir === '.' ? '' : dir, entry.name);
-    if (!entry.isDirectory() && (deniedPath.test(file) || /^\.env(?!\.example$)/.test(file))) failures.push(file);
+    if (!entry.isDirectory() && (deniedPath.test(file) || retiredMedia.test(file) || /^\.env(?!\.example$)/.test(file))) failures.push(file);
     if (entry.isDirectory() && ['.git', '.vercel', 'sandbox'].includes(entry.name)) failures.push(file);
     if (entry.isSymbolicLink()) { failures.push(`symlink: ${file}`); continue; }
     if (entry.isDirectory()) { scan(file); continue; }
