@@ -6,6 +6,9 @@ const failures = [];
 let count = 0;
 function scan(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    // The public repository's own Git database is normal after cloning.
+    // Nested/copied histories remain rejected below.
+    if (dir === '.' && entry.name === '.git' && entry.isDirectory()) continue;
     if (['node_modules', '.next'].includes(entry.name)) continue;
     const file = path.posix.join(dir === '.' ? '' : dir, entry.name);
     if (!entry.isDirectory() && (deniedPath.test(file) || /^\.env(?!\.example$)/.test(file))) failures.push(file);
