@@ -112,7 +112,7 @@ The repository also includes a standalone Dockerfile. The public build serves he
 
 The portfolio edition stores its lists and progress in your browser; clearing site data will erase that local copy. AniList data and third-party artwork remain subject to their original rights and availability.
 
-The installed iPhone PWA has a documented WebKit viewport issue at startup that is still under investigation. Browser-based testing is not presented as proof of physical iPhone compatibility.
+iOS standalone viewport behavior is still being checked on physical devices; browser emulation cannot verify it.
 
 Source code and the MaximAnim identity are currently **all rights reserved**. See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md) for the applicable terms and credits.
 
