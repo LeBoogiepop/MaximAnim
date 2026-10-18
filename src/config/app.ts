@@ -270,7 +270,7 @@ export const GRAPH_PAGES = {
 
 export const LISTS = {
   maxNameLength: 40,
-  defaultList: { name: "En cours", emoji: "⏳" },
+  defaultList: { name: "Watching", emoji: "⏳" },
 } as const;
 
 export const HOME = {
