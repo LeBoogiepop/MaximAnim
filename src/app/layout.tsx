@@ -5,19 +5,30 @@ import localFont from "next/font/local";
 import Script from "next/script";
 import { dockDiagnosticScript } from "@/lib/diagnostics/dock";
 import { AppShell } from "@/components/layout/AppShell";
-import { APP_DESCRIPTION, APP_NAME, THEME } from "@/config/app";
+import { APP_DESCRIPTION, APP_NAME, SITE_URL, THEME } from "@/config/app";
 import { Providers } from "./providers";
 import "./globals.css";
 
 const archivo = localFont({ src: "./fonts/Archivo.ttf", variable: "--font-archivo", display: "swap", weight: "100 900", declarations: [{ prop: "font-stretch", value: "62% 125%" }] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   applicationName: APP_NAME,
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: APP_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: APP_NAME,
+    locale: "en_GB",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    url: "/",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "MaximAnim on three phone screens: home, an anime page and the watch screen" }],
+  },
+  twitter: { card: "summary_large_image", title: APP_NAME, description: APP_DESCRIPTION, images: ["/og.png"] },
   appleWebApp: {
     capable: true,
-    title: "MaximAnim Demo",
+    title: APP_NAME,
     // Content runs under the status bar; safe-area insets keep it readable.
     statusBarStyle: "black-translucent",
   },

@@ -45,7 +45,7 @@
     "typescript": "^5",
     "vitest": "^5.0.2"
   },
-  "description": "Maximanim — bibliothèque, suivi et lecteur d'anime, pensé pour l'iPhone (PWA).",
+  "description": "MaximAnim: a local-first anime library and tracker, designed around the phone (PWA).",
   "engines": {
     "node": ">=20.9"
   }
