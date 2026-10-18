@@ -58,21 +58,19 @@ It started as a personal project and became a responsive web app designed around
 
 This is the **public portfolio edition** of MaximAnim. Its catalogue and episode tracking work, but it doesn't distribute or stream anime episodes.
 
-When you open a watch page, playback uses authorised personal travel footage through YouTube's official embedded player. It's there to demonstrate the navigation and video experience without distributing someone else's episodes. Embedding restrictions still apply.
+A watch page plays one of three of my own travel videos through YouTube's official embedded player, in place of the episode. Each new viewing picks one of them at random. Reloading, coming back with the browser's Back button or resuming from **Continue** keeps the video you were watching and your position. If YouTube refuses an embed, the page tries the other two once, then offers a retry. Embedding restrictions still apply.
 
 The personal edition is developed separately. Private playback providers, extension code, account integrations and relay endpoints are **not present** in this public repository or its build.
 
 ## Under the hood
 
-| Area | Technology |
-| --- | --- |
-| App | Next.js 16, React 19, TypeScript |
-| UI | Tailwind CSS 4, Lucide, responsive layouts |
-| Catalogue | AniList GraphQL, Zod, TanStack Query |
-| Local data | Dexie / IndexedDB |
-| Demo playback | YouTube IFrame Player API |
-| PWA | Serwist |
-| Validation | Vitest, targeted Playwright tests, public-build audit |
+- **App:** Next.js 16, React 19, strict TypeScript
+- **UI:** Tailwind CSS 4, Lucide, responsive layouts
+- **Catalogue:** AniList GraphQL, validated with Zod, cached with TanStack Query
+- **Local data:** Dexie / IndexedDB
+- **Demo playback:** YouTube IFrame Player API
+- **PWA:** Serwist
+- **Validation:** Vitest, targeted Playwright tests, an audit of the public build
 
 Three decisions shaped the project:
 
@@ -84,7 +82,7 @@ Three decisions shaped the project:
 
 ## Run it locally
 
-You'll need **Node.js 24** and npm. No account, environment file or API keys are required.
+You'll need **Node.js 20.9 or newer** (the Docker image runs Node 24) and npm. No account, environment file or API keys are required.
 
 ```bash
 git clone https://github.com/LeBoogiepop/maximanim-portfolio.git
