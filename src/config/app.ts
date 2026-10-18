@@ -11,8 +11,8 @@ export const IMAGE_DELIVERY = { directTimeoutMs: 5000, priorityTimeoutMs: 6000, 
 
 export const RC10 = {
   paletteCacheEntries: 64, paletteSampleSize: 24,
-  // Contain narrow banners within a 950px focal frame; never stretch them to fill the page.
-  heroImageSizes: "(min-width: 1300px) 1100px, (min-width: 1024px) calc(100vw - 12.5rem), 100vw",
+  // Desktop artwork fills the content area beside the navigation rail; mobile keeps its existing rendition sizes.
+  heroImageSizes: "(min-width: 1024px) calc(100vw - 12.5rem), 100vw",
   heroMetadataBudgetMs: 2200, heroImageBudgetMs: 6500,
   heroLogoSizes: "(min-width: 1024px) 480px, 88vw",
   episodeInlineRows: 3, episodePageSize: 30, episodeMetadataLimit: 2000,

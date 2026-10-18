@@ -325,7 +325,7 @@ img {
    * edge) — of a height that does NOT depend on the picture (`--hero-*` come from `heroStageVars`, the page and its loading state
    * read the same ones): the loading state, a poster, a backdrop and a strip share it, so nothing moves when the picture arrives or
    * another season is chosen. The picture is ONE layer dissolved by a mask into the page's black: no blurred copy, no mirror. Desktop
-   * keeps its bounded frame (below).
+   * fills the content width with a viewport-bounded height (below).
    */
   .anime-stage { --hero-w: min(100vw, var(--hero-max-w, 34rem)); --hero-h: calc(var(--safe-top) + var(--hero-w) * var(--hero-k, 1)); }
   .anime-hero, .anime-hero-art { height: var(--hero-h); }
@@ -429,19 +429,15 @@ img {
     .home-header { padding-top: 2.5rem; padding-bottom: 3rem; }
     .home-feed { --continue-card-width: 20rem; }
     .home-continue-body { min-height: calc(20rem * 9 / 16); }
-    .anime-hero, .anime-hero-art { height: calc(29rem + var(--safe-top)); }
-    /* Desktop: a bounded, centred frame cropped inside the clamped ratio; its sides dissolve too from 1101 px. */
-    .hero-plate { margin-inline: auto; max-width: 1100px; max-height: 100%; height: auto; aspect-ratio: var(--hero-ratio, 2.3); -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%); mask-image: linear-gradient(to bottom, #000 45%, transparent 100%); }
-    .hero-plate[data-hero-class="strip"] { height: auto; }
+    .anime-stage { --hero-h: clamp(22rem, 58dvh, 38rem); }
+    /* One full-width cover crop, from the navigation rail to the right edge. Only its bottom dissolves into the reading column. */
+    .hero-plate, .hero-plate[data-hero-class="strip"] { width: 100%; height: 100%; -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%); mask-image: linear-gradient(to bottom, #000 65%, transparent 100%); }
+    .anime-hero-art .hero-top-scrim { display: none; }
     .anime-heading { height: 12rem; }
     .anime-title-logo { width: min(100%, 30rem); }
     .anime-title-logo img { max-height: 10rem; }
     .anime-poster { width: 8.5rem; }
     .anime-heading .display-title { font-size: 3rem; }
-  }
-
-  @media (min-width: 1101px) {
-    .hero-plate { -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%), linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(to bottom, #000 45%, transparent 100%), linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); -webkit-mask-composite: source-in; mask-composite: intersect; }
   }
 
   .skeleton {
