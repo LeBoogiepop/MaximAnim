@@ -4,10 +4,10 @@ import { APP_DESCRIPTION, THEME } from "@/config/app";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "MaximAnim Demo",
-    short_name: "MaximAnim Demo",
+    name: "MaximAnim",
+    short_name: "MaximAnim",
     description: APP_DESCRIPTION,
-    lang: "fr",
+    lang: "en",
     dir: "ltr",
     start_url: "/",
     scope: "/",
