@@ -27,27 +27,33 @@ I built MaximAnim to put the things I kept doing around anime into one interface
 
 It started as a personal project and became a responsive web app designed around the way I use my phone. The interface keeps episode progress close to the artwork and metadata, without turning the library into a spreadsheet.
 
-**[Explore the live portfolio edition →](https://maximanim-portfolio.vercel.app)**
+This repository is the public edition of MaximAnim, a demo of the discovery, library and tracking app. **MaximAnim is not a public service for streaming anime episodes**: the watch screen plays one of my own videos to show how the player and your progress behave. [More below.](#about-this-public-edition)
+
+**[Open the live demo →](https://maximanim-portfolio.vercel.app)**
 
 ## Screenshots
 
-![Five screens from the running app, presented in stylized iPhone frames](docs/images/gallery.webp)
+<p align="center">
+  <img src="docs/images/home.webp" width="250" alt="Home: the Continue card and upcoming releases">
+  <img src="docs/images/search.webp" width="250" alt="Search: trending anime and filters">
+  <img src="docs/images/anime.webp" width="250" alt="An anime page with its seasons and episodes">
+</p>
+<p align="center">
+  <img src="docs/images/player.webp" width="250" alt="The watch screen: a demo video, episode navigation and credits">
+  <img src="docs/images/library.webp" width="250" alt="Lists and the automatic tracking views">
+</p>
 
-| Discover | Explore |
-| :---: | :---: |
-| <img src="docs/images/search.webp" alt="Search results and anime discovery" width="330" /> | <img src="docs/images/anime.webp" alt="Anime detail page and episode tracking" width="330" /> |
-| Search by title, browse the catalogue and open related works. | Move through seasons, episodes, studios and credits. |
-
-| Watch | Keep track |
-| :---: | :---: |
-| <img src="docs/images/player.webp" alt="The portfolio watch screen with video playback" width="330" /> | <img src="docs/images/library.webp" alt="Personal anime library and lists" width="330" /> |
-| Start a demo video, pause it and return to your place. | Keep lists and watched episodes in your own browser. |
+- **Home.** Pick up where you left off and see what is coming next.
+- **Search.** Search by title, browse the catalogue and open related works.
+- **Anime.** Move through seasons, episodes, studios and credits.
+- **Player.** Preview the watch screen: a demo video, episode navigation and the credits of the episode.
+- **Library.** Keep lists and watched episodes in your own browser.
 
 **Desktop, too.** The same catalogue and library adapt to a wider layout with a separate navigation rail.
 
 ![MaximAnim desktop layout](docs/images/desktop.webp)
 
-*All UI screenshots come from the running portfolio build, not redesigned mock screens. The screens were captured at 393 × 852 CSS pixels and placed in stylized phone frames.*
+*Every screen is a capture of the running public build, in English, not a redesigned mock screen. They were taken at 393 × 852 CSS pixels and placed unchanged in stylized phone frames; the player is shown before playback.*
 
 ## What it does
 
@@ -56,11 +62,11 @@ It started as a personal project and became a responsive web app designed around
 - **Keep a library.** Organise your titles and progress locally, even without signing in.
 - **Use it on different screen sizes.** The responsive interface works in a browser and can be installed as a PWA. Catalogue requests still require a connection.
 
-## A real interface, a different video
+## About this public edition
 
-This is the **public portfolio edition** of MaximAnim. Its catalogue and episode tracking work, but it doesn't distribute or stream anime episodes.
+Search, anime pages, lists, progress and the calendar all work for real. What this edition leaves out is the one thing MaximAnim is not: **it is not a public service for streaming anime episodes**, and it offers none.
 
-A watch page plays one of three of my own travel videos through YouTube's official embedded player, in place of the episode. Each new viewing picks one of them at random. Reloading, coming back with the browser's Back button or resuming from **Continue** keeps the video you were watching and your position. If YouTube refuses an embed, the page tries the other two once, then offers a retry. Embedding restrictions still apply.
+The watch screen is there to show how the player, the episode navigation and progress saving behave. It plays one of three of my own travel videos, through YouTube's official embedded player, in place of the episode, and says so under the video in the language you chose. Each new viewing picks one of them at random. Reloading, coming back with the browser's Back button or resuming from **Continue** keeps the video you were watching and your position. If YouTube refuses an embed, the page tries the other two once, then offers a retry. Embedding restrictions still apply.
 
 The personal edition is developed separately. Private playback providers, extension code, account integrations and relay endpoints are **not present** in this public repository or its build.
 
@@ -80,7 +86,7 @@ Three decisions shaped the project:
 
 **Navigation continuity.** AniList responses are cached by identity, and previously presented artwork is handled differently from images appearing for the first time. Returning to a season or anime page shouldn't feel like starting it over.
 
-**Separate public and personal builds.** The portfolio is exported with an independent Git history and a restricted set of source files and API routes. Removing the private integrations from the build matters more than hiding their buttons.
+**Separate public and personal builds.** This edition is exported with an independent Git history and a restricted set of source files and API routes. Removing the private integrations from the build matters more than hiding their buttons.
 
 ## Run it locally
 
@@ -110,7 +116,7 @@ The repository also includes a standalone Dockerfile. The public build serves he
 
 ## Notes
 
-The portfolio edition stores its lists and progress in your browser; clearing site data will erase that local copy. AniList data and third-party artwork remain subject to their original rights and availability.
+This edition stores its lists and progress in your browser; clearing site data will erase that local copy. AniList data and third-party artwork remain subject to their original rights and availability.
 
 iOS standalone viewport behavior is still being checked on physical devices; browser emulation cannot verify it.
 
