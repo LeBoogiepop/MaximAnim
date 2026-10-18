@@ -1,8 +1,10 @@
 export type InterfaceLanguage = "fr" | "en";
-let clientLanguage: InterfaceLanguage = "fr";
+/** Same default as a new profile (`DEFAULT_PREFERENCES`): the server and the first client render must agree with it, or an English visitor sees French until hydration. */
+export const DEFAULT_LANGUAGE: InterfaceLanguage = "en";
+let clientLanguage: InterfaceLanguage = DEFAULT_LANGUAGE;
 const listeners = new Set<() => void>();
-/** Server rendering and the initial hydration always use French. No request-shared server locale. */
-export function interfaceLanguage(): InterfaceLanguage { return typeof window === "undefined" ? "fr" : clientLanguage; }
+/** Server rendering and the initial hydration always use the default language. No request-shared server locale. */
+export function interfaceLanguage(): InterfaceLanguage { return typeof window === "undefined" ? DEFAULT_LANGUAGE : clientLanguage; }
 export function setInterfaceLanguage(language: InterfaceLanguage) {
   if (typeof window === "undefined" || clientLanguage === language) return;
   clientLanguage = language;

@@ -29,7 +29,7 @@ export const FORMAT_OPTIONS: { value: FormatFilter; label: string; formats: Anim
 ];
 
 export const STATUS_OPTIONS: { value: AnimeStatus; label: string }[] = [
-  { value: "RELEASING", get label() { return ui("En cours"); } },
+  { value: "RELEASING", get label() { return ui("En diffusion"); } },
   { value: "FINISHED", get label() { return ui("Terminé"); } },
   { value: "NOT_YET_RELEASED", get label() { return ui("À venir"); } },
 ];

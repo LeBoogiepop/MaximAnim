@@ -67,7 +67,7 @@ export function diffusionStatus(status: AnimeStatus | null, format: AnimeFormat 
 export function rowStatus(status: AnimeStatus | null): { label: string; tone: StatusTone } | null {
   switch (status) {
     case "RELEASING":
-      return { label: ui("En cours"), tone: "live" };
+      return { label: ui("En diffusion"), tone: "live" };
     case "NOT_YET_RELEASED":
       return { label: ui("À venir"), tone: "soon" };
     case "CANCELLED":

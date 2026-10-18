@@ -5,19 +5,31 @@ import localFont from "next/font/local";
 import Script from "next/script";
 import { dockDiagnosticScript } from "@/lib/diagnostics/dock";
 import { AppShell } from "@/components/layout/AppShell";
-import { APP_DESCRIPTION, APP_NAME, THEME } from "@/config/app";
+import { APP_DESCRIPTION, APP_NAME, SITE_URL, THEME } from "@/config/app";
+import { DEFAULT_LANGUAGE } from "@/lib/i18n/language";
 import { Providers } from "./providers";
 import "./globals.css";
 
 const archivo = localFont({ src: "./fonts/Archivo.ttf", variable: "--font-archivo", display: "swap", weight: "100 900", declarations: [{ prop: "font-stretch", value: "62% 125%" }] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   applicationName: APP_NAME,
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: APP_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: APP_NAME,
+    locale: "en_GB",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    url: "/",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "MaximAnim on three phone screens: home, an anime page and the watch screen" }],
+  },
+  twitter: { card: "summary_large_image", title: APP_NAME, description: APP_DESCRIPTION, images: ["/og.png"] },
   appleWebApp: {
     capable: true,
-    title: "MaximAnim Demo",
+    title: APP_NAME,
     // Content runs under the status bar; safe-area insets keep it readable.
     statusBarStyle: "black-translucent",
   },
@@ -45,7 +57,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr" className={archivo.variable}>
+    <html lang={DEFAULT_LANGUAGE} className={archivo.variable}>
       <body>
         <Script id="dock-diagnostic" strategy="beforeInteractive">{dockDiagnosticScript(process.env.NEXT_PUBLIC_BUILD_SHA ?? "dev")}</Script>
         <SerwistProvider
@@ -53,6 +65,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           disable={process.env.NODE_ENV === "development"}
           // Reloading on reconnect would interrupt a playing episode.
           reloadOnOnline={false}
+          // Its history.pushState/replaceState patch posts the target to the worker as-is, and Next passes URL objects, which
+          // cannot be cloned: once the worker controls the page, in-app navigation and Back end on the error screen.
+          cacheOnNavigation={false}
           options={{ scope: "/", type: "classic" }}
         >
           <Providers>

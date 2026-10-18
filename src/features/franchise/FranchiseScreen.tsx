@@ -14,7 +14,7 @@ import { SectionTitle } from "@/components/ui/Section";
 import { FRANCHISE } from "@/config/app";
 import { useProgressIndex } from "@/features/library/hooks";
 import { useTitles } from "@/features/settings/PreferencesContext";
-import { franchiseHeader } from "@/lib/franchise/label";
+import { franchiseHeader, type FranchiseHeader } from "@/lib/franchise/label";
 import { FranchiseNotFound, groupOthers } from "@/lib/franchise/resolve";
 import { useContentMark } from "@/lib/perf/use-content-mark";
 import { routes } from "@/lib/utils/routes";
@@ -64,7 +64,7 @@ export function FranchiseScreen({ id }: { id: number }) {
   return <FranchiseView franchise={query.data} currentId={id} />;
 }
 
-const STATE_TONE: Record<string, string> = { "En cours": "text-green", "Suite annoncée": "text-cream", "À venir": "text-cream", Terminée: "text-soft" };
+const STATE_TONE: Record<FranchiseHeader["stateKey"], string> = { airing: "text-green", sequel: "text-cream", upcoming: "text-cream", finished: "text-soft" };
 
 function FranchiseView({ franchise, currentId }: { franchise: Franchise; currentId: number }) {
   useInterfaceLanguage();
@@ -91,7 +91,7 @@ function FranchiseView({ franchise, currentId }: { franchise: Franchise; current
               <h1 className="display-title">{main(franchise.lead.titles)}</h1>
               <p className="mt-2 text-[16px] font-medium">{header.count}</p>
               {header.period && <p className="text-[15px] text-soft tabular-nums">{header.period}</p>}
-              <p className={`mt-0.5 text-[14px] font-medium ${STATE_TONE[header.state] ?? "text-soft"}`}>{header.state}</p>
+              <p className={`mt-0.5 text-[14px] font-medium ${STATE_TONE[header.stateKey]}`}>{header.state}</p>
             </div>
           </div>
         </div>

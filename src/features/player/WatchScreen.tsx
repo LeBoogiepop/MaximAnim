@@ -13,6 +13,8 @@ import { useTitles, usePreferences } from "@/features/settings/PreferencesContex
 import { upsertAnimeSummary } from "@/lib/db/library";
 import { availableEpisodeCount, isSingleItem } from "@/lib/anilist/normalize";
 import { realEpisodeTitle } from "@/lib/providers/episodes";
+import { useInterfaceLanguage } from "@/lib/i18n/useInterfaceLanguage";
+import { ui } from "@/lib/i18n/translate";
 import { openDemo, nextDemo, storeDemo, type DemoSession } from "@/lib/portfolio/demo";
 import { routes } from "@/lib/utils/routes";
 import { WatchCredits, type CreditGroup } from "./WatchCredits";
@@ -23,6 +25,7 @@ export function WatchScreen(props: { animeId: number; episodeNumber: number; lab
   return <WatchEpisode key={`${props.animeId}:${props.episodeNumber}`} {...props} />;
 }
 function WatchEpisode({ animeId, episodeNumber }: { animeId: number; episodeNumber: number }) {
+  useInterfaceLanguage();
   const anime = useAnime(animeId);
   const previews = useEpisodeArtwork(animeId);
   const { credits } = useWatchCredits(animeId, episodeNumber);
@@ -66,17 +69,17 @@ function WatchEpisode({ animeId, episodeNumber }: { animeId: number; episodeNumb
     <header className="px-safe flex min-h-14 shrink-0 items-center gap-3"><BackButton fallback={routes.anime(animeId)} /><Link href={routes.anime(animeId)} className="min-w-0 truncate text-sm font-semibold text-soft">{entry ? main(entry.titles) : "MaximAnim"}</Link></header>
     <div className="watch-shell watch-layout flex flex-col" data-testid="watch-layout"><div className="watch-col relative flex min-w-0 flex-1 flex-col gap-2 pb-8">
       <div className="watch-stage relative aspect-video min-h-[200px] w-full shrink-0 bg-black lg:overflow-hidden lg:rounded-2xl lg:border lg:border-line" data-testid="watch-stage">
-        {unavailable ? <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 px-5 text-center" role="status"><p className="text-sm text-soft">La vidéo est momentanément indisponible.</p><button type="button" onClick={retry} className="min-h-11 text-sm text-accent">Réessayer</button></div> : session ? <YoutubeDemo key={`${session.sessionId}:${session.revision}`} session={session} animeId={animeId} episodeNumber={episodeNumber} onProgress={storeDemo} onUnavailable={fail} /> : <div className="aspect-video min-h-[200px]" aria-label="Préparation de la vidéo" />}
+        {unavailable ? <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 px-5 text-center" role="status"><p className="text-sm text-soft">{ui("La vidéo est momentanément indisponible.")}</p><button type="button" onClick={retry} className="min-h-11 text-sm text-accent">{ui("Réessayer")}</button></div> : session ? <YoutubeDemo key={`${session.sessionId}:${session.revision}`} session={session} animeId={animeId} episodeNumber={episodeNumber} onProgress={storeDemo} onUnavailable={fail} /> : <div className="aspect-video min-h-[200px]" role="status"><span className="sr-only">{ui("Préparation de la vidéo")}</span></div>}
       </div>
-      <p className="px-safe text-xs leading-relaxed text-muted lg:px-0">Pour respecter les droits de diffusion, cette démonstration utilise une de mes vidéos personnelles à la place de l’épisode.</p>
-      {!single && <nav className="watch-next px-safe grid grid-cols-3 gap-2 lg:px-0" aria-label="Navigation des épisodes">
-        {episodeNumber > 1 ? <Link href={routes.watch(animeId, episodeNumber - 1)} aria-label="Épisode précédent" className="flex min-h-12 items-center justify-center gap-1 rounded-xl border border-line text-sm"><ChevronLeft size={18} aria-hidden="true" />Préc.</Link> : <span aria-disabled="true" className="flex min-h-12 items-center justify-center rounded-xl border border-line text-sm text-muted">Préc.</span>}
-        <Link href={routes.episodes(animeId)} className="flex min-h-12 items-center justify-center gap-1 rounded-xl border border-line text-sm"><ListVideo size={18} aria-hidden="true" />Épisodes</Link>
-        {available != null && episodeNumber < available ? <Link href={routes.watch(animeId, episodeNumber + 1)} aria-label="Épisode suivant" className="flex min-h-12 items-center justify-center gap-1 rounded-xl border border-line text-sm">Suiv.<ChevronRight size={18} aria-hidden="true" /></Link> : <span aria-disabled="true" className="flex min-h-12 items-center justify-center rounded-xl border border-line text-sm text-muted">Suiv.</span>}
+      <p className="px-safe text-xs leading-relaxed text-muted lg:px-0">{ui("Pour respecter les droits de diffusion, cette démonstration utilise une de mes vidéos personnelles à la place de l’épisode.")}</p>
+      {!single && <nav className="watch-next px-safe grid grid-cols-3 gap-2 lg:px-0" aria-label={ui("Navigation des épisodes")}>
+        {episodeNumber > 1 ? <Link href={routes.watch(animeId, episodeNumber - 1)} aria-label={ui("Épisode précédent")} className="flex min-h-12 items-center justify-center gap-1 rounded-xl border border-line text-sm"><ChevronLeft size={18} aria-hidden="true" />{ui("Préc.")}</Link> : <span aria-disabled="true" className="flex min-h-12 items-center justify-center rounded-xl border border-line text-sm text-muted">{ui("Préc.")}</span>}
+        <Link href={routes.episodes(animeId)} className="flex min-h-12 items-center justify-center gap-1 rounded-xl border border-line text-sm"><ListVideo size={18} aria-hidden="true" />{ui("Épisodes")}</Link>
+        {available != null && episodeNumber < available ? <Link href={routes.watch(animeId, episodeNumber + 1)} aria-label={ui("Épisode suivant")} className="flex min-h-12 items-center justify-center gap-1 rounded-xl border border-line text-sm">{ui("Suiv.")}<ChevronRight size={18} aria-hidden="true" /></Link> : <span aria-disabled="true" className="flex min-h-12 items-center justify-center rounded-xl border border-line text-sm text-muted">{ui("Suiv.")}</span>}
       </nav>}
       <div className="watch-details px-safe flex flex-col items-start gap-1 lg:px-0" data-testid="watch-identity">
         {entry && <Link href={routes.anime(animeId)} className="inline-flex min-h-11 max-w-full items-center gap-1 text-sm font-semibold text-soft" data-testid="watch-anime-link"><span className="line-clamp-2">{main(entry.titles)}</span><ChevronRight size={14} className="shrink-0 text-accent" aria-hidden="true" /></Link>}
-        <h1 className="m-0 text-[17px] font-semibold leading-snug wrap-anywhere">{single ? "Film" : `Épisode ${episodeNumber}`}{title && <> · <span className="font-medium text-soft" data-testid="watch-episode-title">{title}</span></>}</h1>
+        <h1 className="m-0 text-[17px] font-semibold leading-snug wrap-anywhere">{single ? ui("Film") : ui("Épisode {0}", episodeNumber)}{title && <> · <span className="font-medium text-soft" data-testid="watch-episode-title">{title}</span></>}</h1>
       </div>
       {entry && <WatchCredits animeId={animeId} episodeNumber={episodeNumber} episode={credits ? groups(credits.episodeGroups) : []} series={credits ? groups(credits.seriesGroups.filter(group => group.category !== "studio" && group.category !== "original")) : []} studios={headlineStudios(entry.studios)} film={single} />}
     </div></div>

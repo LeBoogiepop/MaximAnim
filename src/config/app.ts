@@ -26,7 +26,9 @@ export const ARTWORK_PALETTE = {
   sampleMinLightness: 0.2, sampleMaxLightness: 0.96, sampleMinChroma: 0.035,
   hueBucketDegrees: 30, minAlpha: 128,
 } as const;
-export const APP_DESCRIPTION = "Bibliothèque, suivi et lecteur d'anime — pensé pour l'iPhone.";
+export const APP_DESCRIPTION = "A local-first anime library and tracker, designed around the phone.";
+/** Canonical public address: absolute base for the Open Graph image and link previews. */
+export const SITE_URL = "https://maximanim-portfolio.vercel.app";
 
 export const GUEST_PLAYBACK = {
   evidenceTtlMs: 30 * 60_000, windowMs: 10 * 60_000,
@@ -270,7 +272,7 @@ export const GRAPH_PAGES = {
 
 export const LISTS = {
   maxNameLength: 40,
-  defaultList: { name: "En cours", emoji: "⏳" },
+  defaultList: { name: "Watching", emoji: "⏳" },
 } as const;
 
 export const HOME = {

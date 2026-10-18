@@ -1,4 +1,5 @@
 import { availableEpisodeCount } from "@/lib/anilist/normalize";
+import { ui } from "@/lib/i18n/translate";
 import type { AnimeRecord, LibraryStateRecord, ProgressRecord } from "@/lib/db/types";
 import { isInProgress, isStaleDismissal } from "@/lib/progress/logic";
 
@@ -17,7 +18,8 @@ export type SmartView = "continue" | "completed" | "abandoned";
 
 export const SMART_VIEWS: readonly SmartView[] = ["continue", "completed", "abandoned"];
 
-export const SMART_VIEW_LABELS: Record<SmartView, string> = { continue: "À continuer", completed: "Terminés", abandoned: "Abandonnés" };
+// Getters, so the label follows the interface language at render time (the keys already exist in the catalogue).
+export const SMART_VIEW_LABELS: Record<SmartView, string> = { get continue() { return ui("À continuer"); }, get completed() { return ui("Terminés"); }, get abandoned() { return ui("Abandonnés"); } };
 
 
 export interface LibraryEntry {
