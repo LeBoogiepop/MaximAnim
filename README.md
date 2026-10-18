@@ -27,7 +27,7 @@ I built MaximAnim to put the things I kept doing around anime into one interface
 
 It started as a personal project and became a responsive web app designed around the way I use my phone. The interface keeps episode progress close to the artwork and metadata, without turning the library into a spreadsheet.
 
-This repository is the public edition of MaximAnim, a demo of the discovery, library and tracking app. **MaximAnim is not a public service for streaming anime episodes**: the watch screen plays one of my own videos to show how the player and your progress behave. [More below.](#about-this-public-edition)
+This repository is the public edition of MaximAnim, library and tracking app. **MaximAnim is not a public service for streaming anime episodes**: the watch screen plays one of my own videos to show how the player and your progress behave. [More below.](#about-this-public-edition)
 
 **[Open the live demo →](https://maximanim-portfolio.vercel.app)**
 
