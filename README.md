@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="public/brand/mark.svg" width="76" alt="MaximAnim logo" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/brand/mark.svg">
+    <img src="docs/images/mark-light.svg" width="76" alt="MaximAnim logo">
+  </picture>
 
   <h1>MaximAnim</h1>
 
