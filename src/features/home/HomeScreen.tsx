@@ -82,7 +82,7 @@ export function HomeScreen({ active = true }: { active?: boolean }) {
               <ContinueCard
                 key={anime.id}
                 anime={anime.summary}
-                href={routes.watch(anime.id, progress.episodeNumber)}
+                href={`${routes.watch(anime.id, progress.episodeNumber)}${progress.completed ? "" : "?intent=resume"}`}
                 episodeNumber={progress.episodeNumber}
                 percentage={progress.percentage}
                 currentTime={progress.currentTime}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, ListVideo } from "lucide-react";
 import { BackButton } from "@/components/layout/BackButton";
@@ -12,7 +13,7 @@ import { useTitles, usePreferences } from "@/features/settings/PreferencesContex
 import { upsertAnimeSummary } from "@/lib/db/library";
 import { availableEpisodeCount, isSingleItem } from "@/lib/anilist/normalize";
 import { realEpisodeTitle } from "@/lib/providers/episodes";
-import { chooseDemo, nextDemo, storeDemo, type DemoSession } from "@/lib/portfolio/demo";
+import { openDemo, nextDemo, storeDemo, type DemoSession } from "@/lib/portfolio/demo";
 import { routes } from "@/lib/utils/routes";
 import { WatchCredits, type CreditGroup } from "./WatchCredits";
 import { YoutubeDemo } from "./YoutubeDemo";
@@ -30,31 +31,42 @@ function WatchEpisode({ animeId, episodeNumber }: { animeId: number; episodeNumb
   const [session, setSession] = useState<DemoSession | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const rejected = useRef(new Set<string>());
+  const active = useRef<DemoSession | null>(null);
+  const query = useSearchParams().toString();
   useEffect(() => {
     let live = true;
-    const selected = chooseDemo(`${animeId}:${episodeNumber}`);
+    const url = new URL(window.location.href);
+    const sessionId = url.searchParams.get("session");
+    const intent = url.searchParams.get("intent");
+    // Persist this navigation entry in its URL. Reload/Back reuse it; a new episode click replaces it.
+    const selected = !intent && sessionId && active.current?.sessionId === sessionId ? active.current : openDemo(`${animeId}:${episodeNumber}`, intent === "resume" ? { kind: "resume" } : !intent && sessionId ? { kind: "session", sessionId } : { kind: "new" });
+    if (active.current?.sessionId !== selected.sessionId) { rejected.current.clear(); setUnavailable(false); }
+    active.current = selected;
+    url.searchParams.delete("intent");
+    url.searchParams.set("session", selected.sessionId);
+    if (url.search !== window.location.search) window.history.replaceState(window.history.state, "", url);
     queueMicrotask(() => { if (live) setSession(selected); });
     return () => { live = false; };
-  }, [animeId, episodeNumber]);
+  }, [animeId, episodeNumber, query]);
   useEffect(() => { if (anime.data) void upsertAnimeSummary(anime.data.anime); }, [anime.data]);
   const entry = anime.data?.anime;
   const single = entry ? isSingleItem(entry) : false;
   const available = entry ? availableEpisodeCount(entry) : null;
   const title = realEpisodeTitle({ number: episodeNumber, title: previews.find(p => p.number === episodeNumber)?.title ?? null }, titleLanguage);
   const groups = (items: NonNullable<typeof credits>["episodeGroups"]): CreditGroup[] => items.map(group => ({ key: group.category, role: group.label, people: group.entities.map(person => ({ id: person.id, name: person.name, nativeName: person.nativeName, image: person.image })) }));
-  const retry = () => { rejected.current.clear(); setUnavailable(false); setSession(chooseDemo(`${animeId}:${episodeNumber}`)); };
+  const retry = () => { if (!session) return; rejected.current.clear(); setUnavailable(false); const next = openDemo(session.key, { kind: "session", sessionId: session.sessionId }); active.current = next; setSession(next); };
   const fail = (code: number) => {
     if (!session) return;
     rejected.current.add(session.id);
     // Media restrictions can improve with another approved video; API/network failures cannot.
     const next = [100, 101, 150].includes(code) ? nextDemo(session, [...rejected.current]) : null;
-    if (next) setSession(next); else setUnavailable(true);
+    if (next) { active.current = next; setSession(next); } else setUnavailable(true);
   };
   return <div className="watch-page contextual-content flex min-h-dvh flex-col bg-ink" data-display="browser">
     <header className="px-safe flex min-h-14 shrink-0 items-center gap-3"><BackButton fallback={routes.anime(animeId)} /><Link href={routes.anime(animeId)} className="min-w-0 truncate text-sm font-semibold text-soft">{entry ? main(entry.titles) : "MaximAnim"}</Link></header>
     <div className="watch-shell watch-layout flex flex-col" data-testid="watch-layout"><div className="watch-col relative flex min-w-0 flex-1 flex-col gap-2 pb-8">
       <div className="watch-stage relative aspect-video min-h-[200px] w-full shrink-0 bg-black lg:overflow-hidden lg:rounded-2xl lg:border lg:border-line" data-testid="watch-stage">
-        {unavailable ? <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 px-5 text-center" role="status"><p className="text-sm text-soft">La vidéo est momentanément indisponible.</p><button type="button" onClick={retry} className="min-h-11 text-sm text-accent">Réessayer</button></div> : session ? <YoutubeDemo key={session.id} session={session} animeId={animeId} episodeNumber={episodeNumber} onProgress={storeDemo} onUnavailable={fail} /> : <div className="aspect-video min-h-[200px]" aria-label="Préparation de la vidéo" />}
+        {unavailable ? <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 px-5 text-center" role="status"><p className="text-sm text-soft">La vidéo est momentanément indisponible.</p><button type="button" onClick={retry} className="min-h-11 text-sm text-accent">Réessayer</button></div> : session ? <YoutubeDemo key={`${session.sessionId}:${session.revision}`} session={session} animeId={animeId} episodeNumber={episodeNumber} onProgress={storeDemo} onUnavailable={fail} /> : <div className="aspect-video min-h-[200px]" aria-label="Préparation de la vidéo" />}
       </div>
       <p className="px-safe text-xs leading-relaxed text-muted lg:px-0">Pour respecter les droits de diffusion, cette démonstration utilise une de mes vidéos personnelles à la place de l’épisode.</p>
       {!single && <nav className="watch-next px-safe grid grid-cols-3 gap-2 lg:px-0" aria-label="Navigation des épisodes">

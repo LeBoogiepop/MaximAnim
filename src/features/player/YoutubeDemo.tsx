@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type { DemoSession } from "@/lib/portfolio/demo";
+import { isCurrentDemo, type DemoSession } from "@/lib/portfolio/demo";
 import { savePlaybackSample } from "@/lib/db/progress";
 type Player = { getCurrentTime(): number; getDuration(): number; destroy(): void };
 type Youtube = { Player: new (element: HTMLElement, config: { videoId: string; width: string; height: string; playerVars: Record<string, string | number>; events: { onReady(): void; onStateChange(event: { data: number }): void; onError(event: { data: number }): void } }) => Player };
@@ -16,7 +16,7 @@ function loadYoutube(): Promise<Youtube> {
   });
   return api;
 }
-export function YoutubeDemo({ session, animeId, episodeNumber, onProgress, onUnavailable }: { session: DemoSession; animeId: number; episodeNumber: number; onProgress: (next: DemoSession) => void; onUnavailable?: (code: number) => void }) {
+export function YoutubeDemo({ session, animeId, episodeNumber, onProgress, onUnavailable }: { session: DemoSession; animeId: number; episodeNumber: number; onProgress: (next: DemoSession) => boolean; onUnavailable?: (code: number) => void }) {
   const host = useRef<HTMLDivElement>(null);
   const callback = useRef(onProgress);
   const unavailable = useRef(onUnavailable);
@@ -29,8 +29,8 @@ export function YoutubeDemo({ session, animeId, episodeNumber, onProgress, onUna
       if (!player || rejected) return;
       const position = player.getCurrentTime(); const duration = player.getDuration();
       if (!Number.isFinite(position) || !Number.isFinite(duration) || duration <= 0) return;
-      callback.current({ ...session, position, duration, updatedAt: Date.now() });
-      if (position >= 1) pending = pending.then(() => savePlaybackSample({ animeId, episodeNumber, providerId: "portfolio-youtube", providerEpisodeId: session.id, currentTime: position, duration, ended, now: Date.now(), completionThreshold: 0.9 })).catch(() => undefined);
+      if (!callback.current({ ...session, position, duration, updatedAt: Date.now() })) return;
+      if (position >= 1) pending = pending.then(() => isCurrentDemo(session) ? savePlaybackSample({ animeId, episodeNumber, providerId: "portfolio-youtube", providerEpisodeId: session.id, currentTime: position, duration, ended, now: Date.now(), completionThreshold: 0.9 }) : undefined).catch(() => undefined);
     };
     const hidden = () => { if (document.visibilityState === "hidden") save(); };
     const leaving = () => save();
