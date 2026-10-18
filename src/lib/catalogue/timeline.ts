@@ -18,7 +18,7 @@ export const TIMELINE_ORDERS: { key: TimelineOrder; label: string }[] = [
 export const TIMELINE_FILTERS: { key: TimelineFilter; label: string }[] = [
   { key: "all", get label() { return ui("Tout"); } },
   { key: "upcoming", get label() { return ui("À venir"); } },
-  { key: "airing", get label() { return ui("En cours"); } },
+  { key: "airing", get label() { return ui("En diffusion"); } },
   { key: "finished", get label() { return ui("Terminé"); } },
 ];
 

@@ -26,7 +26,7 @@ import { toneFromCover } from "@/lib/utils/tone";
 import { SourceAdaptationRow } from "./SourceAdaptationRow";
 
 const FORMATS: Record<string, string> = { MANGA: "Manga", get NOVEL() { return ui("Roman"); }, ONE_SHOT: "One-shot" };
-const STATUSES: Record<string, string> = { get FINISHED() { return ui("Terminé"); }, get RELEASING() { return ui("En cours"); }, get NOT_YET_RELEASED() { return ui("À venir"); }, get CANCELLED() { return ui("Arrêté"); }, get HIATUS() { return ui("En pause"); } };
+const STATUSES: Record<string, string> = { get FINISHED() { return ui("Terminé"); }, get RELEASING() { return ui("En publication"); }, get NOT_YET_RELEASED() { return ui("À venir"); }, get CANCELLED() { return ui("Arrêté"); }, get HIATUS() { return ui("En pause"); } };
 
 /**
  * The manga or novel an anime adapts, for the cultural context of the adaptation only — not a reader. Everything on it

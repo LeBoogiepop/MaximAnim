@@ -10,7 +10,7 @@ import { routes } from "@/lib/utils/routes";
 import type { Anime } from "@/types/anime";
 
 export function publicationStatus(status: string | null | undefined): string {
-  return ({ RELEASING: ui("En cours"), FINISHED: ui("Terminé"), HIATUS: ui("En pause"), CANCELLED: ui("Arrêté"), NOT_YET_RELEASED: ui("À venir") } as Record<string, string>)[status ?? ""] ?? ui("Inconnu");
+  return ({ RELEASING: ui("En publication"), FINISHED: ui("Terminé"), HIATUS: ui("En pause"), CANCELLED: ui("Arrêté"), NOT_YET_RELEASED: ui("À venir") } as Record<string, string>)[status ?? ""] ?? ui("Inconnu");
 }
 /** Only the entry's unambiguous SOURCE link; never its season or franchise status. */
 export function SourcePublication({ anime }: { anime: Anime }) {

@@ -141,7 +141,7 @@ export function SeasonStrip({ franchise, currentId, resolved = true, failed = fa
                       }}
                       aria-current={active ? "true" : undefined}
                       aria-expanded={active && hasParts ? open : undefined}
-                      aria-label={ui("Saison {0}{1}", g.season, active ? " (cette fiche)" : "")}
+                      aria-label={active ? `${ui("Saison {0}", g.season)} ${ui("(cette fiche)")}` : ui("Saison {0}", g.season)}
                       title={main(g.parts[0]!.member.entry.titles)}
                       data-testid="season-chip"
                       data-active={active ? "true" : undefined}

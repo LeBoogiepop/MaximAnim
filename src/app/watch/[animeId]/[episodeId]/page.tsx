@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { WatchScreen } from "@/features/player/WatchScreen";
 import { parseEpisodeSlug } from "@/lib/providers/episodes";
 
-export const metadata: Metadata = { title: "Lecture" };
+export const metadata: Metadata = { title: "Watch" };
 
 export default async function WatchPage({ params, searchParams }: PageProps<"/watch/[animeId]/[episodeId]">) {
   const { animeId, episodeId } = await params;

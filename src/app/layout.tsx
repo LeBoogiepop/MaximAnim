@@ -6,6 +6,7 @@ import Script from "next/script";
 import { dockDiagnosticScript } from "@/lib/diagnostics/dock";
 import { AppShell } from "@/components/layout/AppShell";
 import { APP_DESCRIPTION, APP_NAME, SITE_URL, THEME } from "@/config/app";
+import { DEFAULT_LANGUAGE } from "@/lib/i18n/language";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -56,7 +57,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr" className={archivo.variable}>
+    <html lang={DEFAULT_LANGUAGE} className={archivo.variable}>
       <body>
         <Script id="dock-diagnostic" strategy="beforeInteractive">{dockDiagnosticScript(process.env.NEXT_PUBLIC_BUILD_SHA ?? "dev")}</Script>
         <SerwistProvider
