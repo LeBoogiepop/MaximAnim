@@ -23,10 +23,12 @@ export function YoutubeDemo({ session, animeId, episodeNumber, onProgress, onUna
   const [playerState, setPlayerState] = useState(-1);
   useEffect(() => { callback.current = onProgress; unavailable.current = onUnavailable; });
   useEffect(() => {
-    let live = true; let rejected = false; let player: Player | undefined; let timer: ReturnType<typeof setInterval> | undefined;
+    let live = true; let rejected = false; let ready = false; let player: Player | undefined; let timer: ReturnType<typeof setInterval> | undefined;
     let pending: Promise<unknown> = Promise.resolve();
+    // The object returned by `new YT.Player` only gets its methods at `onReady`: leaving the screen before that (Next or Back right
+    // after opening an episode) must not read a position from it.
     const save = (ended = false) => {
-      if (!player || rejected) return;
+      if (!player || !ready || rejected) return;
       const position = player.getCurrentTime(); const duration = player.getDuration();
       if (!Number.isFinite(position) || !Number.isFinite(duration) || duration <= 0) return;
       if (!callback.current({ ...session, position, duration, updatedAt: Date.now() })) return;
@@ -38,13 +40,13 @@ export function YoutubeDemo({ session, animeId, episodeNumber, onProgress, onUna
       if (!live || !host.current) return;
       const mount = document.createElement("div"); host.current.append(mount);
       player = new YT.Player(mount, { videoId: session.id, width: "100%", height: "100%", playerVars: { controls: 1, playsinline: 1, fs: 1, autoplay: 0, origin: window.location.origin, start: Math.floor(session.position) }, events: {
-        onReady() { if (live) timer = setInterval(() => save(), 5000); },
+        onReady() { if (live) { ready = true; timer = setInterval(() => save(), 5000); } },
         onStateChange(event) { if (live && !rejected) { setPlayerState(event.data); save(event.data === 0); } },
         onError(event) { if (live && !rejected) { rejected = true; clearInterval(timer); unavailable.current?.(event.data); } },
       } });
     }).catch(() => { if (live && !rejected) { rejected = true; unavailable.current?.(0); } });
     document.addEventListener("visibilitychange", hidden); window.addEventListener("pagehide", leaving);
-    return () => { live = false; clearInterval(timer); save(); player?.destroy(); document.removeEventListener("visibilitychange", hidden); window.removeEventListener("pagehide", leaving); };
+    return () => { live = false; clearInterval(timer); save(); if (typeof player?.destroy === "function") player.destroy(); document.removeEventListener("visibilitychange", hidden); window.removeEventListener("pagehide", leaving); };
   }, [session, animeId, episodeNumber]);
   return <div ref={host} data-youtube-state={playerState} className="aspect-video min-h-[200px] min-w-[200px] w-full bg-black [&_iframe]:h-full [&_iframe]:w-full" aria-label={`YouTube · ${session.title}`} />;
 }
