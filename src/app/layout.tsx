@@ -65,6 +65,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           disable={process.env.NODE_ENV === "development"}
           // Reloading on reconnect would interrupt a playing episode.
           reloadOnOnline={false}
+          // Its history.pushState/replaceState patch posts the target to the worker as-is, and Next passes URL objects, which
+          // cannot be cloned: once the worker controls the page, in-app navigation and Back end on the error screen.
+          cacheOnNavigation={false}
           options={{ scope: "/", type: "classic" }}
         >
           <Providers>
