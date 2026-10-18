@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { APP_DESCRIPTION, APP_NAME, THEME } from "@/config/app";
+import { APP_DESCRIPTION, THEME } from "@/config/app";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: `${APP_NAME} Portfolio`,
+    name: "MaximAnim Demo",
     short_name: "MaximAnim Demo",
     description: APP_DESCRIPTION,
     lang: "fr",
