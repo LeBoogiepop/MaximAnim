@@ -7,7 +7,9 @@ const config: NextConfig = {
   images: { loader: "custom", loaderFile: "./src/lib/artwork/next-image-loader.ts", qualities: [75, 85, 95] },
   async headers() { return [{ source: "/:path*", headers: [
     { key: "X-Content-Type-Options", value: "nosniff" }, { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-    { key: "X-Frame-Options", value: "DENY" }, { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+    // Public portfolio demo: framed only by the matching personal portfolio.
+    // CSP frame-ancestors replaces DENY, which cannot allowlist specific domains.
+    { key: "Content-Security-Policy", value: "frame-ancestors 'self' https://maxime.city https://www.maxime.city" }, { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   ] }, { source: "/serwist/:path*", headers: [{ key: "Cache-Control", value: "no-cache" }] }]; },
 };
 export default withSerwist(config);
